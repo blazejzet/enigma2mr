@@ -1,0 +1,32 @@
+PODS:
+  - AERecord (4.1.2)
+  - ReachabilitySwift (5.0.0)
+  - SwiftyStoreKit (0.16.1)
+  - SWXMLHash (4.0.0)
+  - TVVLCKit (3.5.1)
+
+DEPENDENCIES:
+  - AERecord
+  - ReachabilitySwift
+  - SwiftyStoreKit
+  - SWXMLHash (~> 4.0.0)
+  - TVVLCKit (>= 3.1.4)
+
+SPEC REPOS:
+  trunk:
+    - AERecord
+    - ReachabilitySwift
+    - SwiftyStoreKit
+    - SWXMLHash
+    - TVVLCKit
+
+SPEC CHECKSUMS:
+  AERecord: ee8e773baa650731f06e89546a8f97e28fe00c32
+  ReachabilitySwift: 985039c6f7b23a1da463388634119492ff86c825
+  SwiftyStoreKit: 6b9c08810269f030586dac1fae8e75871a82e84a
+  SWXMLHash: 6bbc0bf72975a18ceda469fb7d6a886a26d81694
+  TVVLCKit: a9ab3e8d62ad2d02b7c89101d214f36ad874d45a
+
+PODFILE CHECKSUM: d19e2959a7755d33513bbeaa54f0dfaadf8fb7a9
+
+COCOAPODS: 1.11.3

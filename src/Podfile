@@ -1,0 +1,44 @@
+platform :tvos, '15.0'
+
+target 'EnigmaTV' do
+  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  use_frameworks!
+pod 'TVVLCKit', '>= 3.1.4'
+# 5.2+ ships the privacy manifest App Store Connect requires ("Reachability" is on Apple's SDK list).
+pod 'ReachabilitySwift', '~> 5.2'
+  # Pods for EnigmaTV
+pod 'SWXMLHash', '~> 4.0.0'
+pod 'AERecord'
+pod 'SwiftyStoreKit'
+end
+
+# Current Xcode only supports tvOS 15.0+; several pods still declare 9.x.
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['TVOS_DEPLOYMENT_TARGET'] = '15.0'
+    end
+  end
+
+  # Archiving with Xcode 15+: the generated script resolves framework symlinks to relative paths,
+  # which breaks `rsync` ("…/UninstalledProducts/…: No such file or directory"). Use absolute paths.
+  Dir.glob(File.join(installer.sandbox.target_support_files_root, '**', '*-frameworks.sh')).each do |script|
+    text = File.read(script)
+    fixed = text.gsub('source="$(readlink "${source}")"', 'source="$(readlink -f "${source}")"')
+    File.write(script, fixed) if fixed != text
+  end
+
+  # App Store Connect rejects binaries with bitcode ("Invalid Executable … contains bitcode").
+  # TVVLCKit 3.5.x ships its device slice with bitcode – strip it.
+  Dir.glob(File.join(installer.sandbox.root, 'TVVLCKit', '**', 'tvos-arm64', '*.framework', 'TVVLCKit')).each do |binary|
+    system('xcrun', 'bitcode_strip', '-r', binary, '-o', binary)
+  end
+
+  # TVVLCKit has no privacy manifest but calls required-reason APIs (stat, statfs, mach_absolute_time, UserDefaults).
+  manifest = File.join(__dir__, 'PrivacyManifests', 'TVVLCKit.xcprivacy')
+  if File.exist?(manifest)
+    Dir.glob(File.join(installer.sandbox.root, 'TVVLCKit', '**', 'TVVLCKit.framework')).each do |framework|
+      FileUtils.cp(manifest, File.join(framework, 'PrivacyInfo.xcprivacy'))
+    end
+  end
+end

@@ -1,0 +1,11 @@
+# Xcode build output
+src/DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+
+# Debug symbols of prebuilt pods (TVVLCKit dSYMs are 140-300 MB, over GitHub's 100 MB limit)
+*.dSYM/
+
+# macOS
+.DS_Store

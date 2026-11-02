@@ -1,0 +1,225 @@
+
+/* Class = "UILabel"; text = "192.168.128.21"; ObjectID = "00I-ir-0BB"; */
+"00I-ir-0BB.text" = "192.168.128.21";
+
+/* Class = "UIViewController"; title = "Recordings #2"; ObjectID = "1Dr-Zq-ZRO"; */
+"1Dr-Zq-ZRO.title" = "Recordings #2";
+
+/* Class = "UILabel"; text = "Attention!"; ObjectID = "1bM-Ba-DhJ"; */
+"1bM-Ba-DhJ.text" = "Attention!";
+
+/* Class = "UIButton"; normalTitle = "REBOOT RECEIVER"; ObjectID = "3Hz-fa-SFY"; */
+"3Hz-fa-SFY.normalTitle" = "REBOOT RECEIVER";
+
+/* Class = "UILabel"; text = " SOME NAME"; ObjectID = "5dA-pt-Quh"; */
+"5dA-pt-Quh.text" = " SOME NAME";
+
+/* Class = "UITabBarItem"; title = "Item"; ObjectID = "6Fh-Ve-fIc"; */
+"6Fh-Ve-fIc.title" = "Item";
+
+/* Class = "UILabel"; text = "RECORDINGS"; ObjectID = "6c1-Z9-Sgi"; */
+"6c1-Z9-Sgi.text" = "RECORDINGS";
+
+/* Class = "UIButton"; normalTitle = "Clear"; ObjectID = "8Om-eG-wI0"; */
+"8Om-eG-wI0.normalTitle" = "Clear";
+
+/* Class = "UILabel"; text = "Model"; ObjectID = "9j1-ZD-S0d"; */
+"9j1-ZD-S0d.text" = "Model";
+
+/* Class = "UILabel"; text = "Searching for Enigma2 based receivers in Your network..."; ObjectID = "AjS-u6-Awe"; */
+"AjS-u6-Awe.text" = "Searching for Enigma2 based receivers in Your network...";
+
+/* Class = "UIViewController"; title = "epg"; ObjectID = "BYZ-38-t0r"; */
+"BYZ-38-t0r.title" = "epg";
+
+/* Class = "UILabel"; text = "Searching for active STB"; ObjectID = "C4Y-2y-QrC"; */
+"C4Y-2y-QrC.text" = "Searching for active STB";
+
+/* Class = "UILabel"; text = "RECORDINGS"; ObjectID = "CC3-lq-0Cn"; */
+"CC3-lq-0Cn.text" = "RECORDINGS";
+
+/* Class = "UILabel"; text = "MOV"; ObjectID = "DAr-X6-sf4"; */
+"DAr-X6-sf4.text" = "MOV";
+
+/* Class = "UIButton"; normalTitle = "▶ CONTINUE"; ObjectID = "DVu-ZL-cFH"; */
+"DVu-ZL-cFH.normalTitle" = "▶ CONTINUE";
+
+/* Class = "UILabel"; text = "RECORDING NAME"; ObjectID = "E2C-QP-IEZ"; */
+"E2C-QP-IEZ.text" = "RECORDING NAME";
+
+/* Class = "UILabel"; text = "DATE"; ObjectID = "EdW-H5-ubd"; */
+"EdW-H5-ubd.text" = "DATE";
+
+/* Class = "UILabel"; text = " 12121"; ObjectID = "GdV-LB-ssO"; */
+"GdV-LB-ssO.text" = " 12121";
+
+/* Class = "UITabBarItem"; title = "Item"; ObjectID = "HPY-jB-Uq3"; */
+"HPY-jB-Uq3.title" = "Item";
+
+/* Class = "UIButton"; normalTitle = "Help"; ObjectID = "HeD-ji-8Ug"; */
+"HeD-ji-8Ug.normalTitle" = "Help";
+
+/* Class = "UILabel"; text = "TIMER NAME"; ObjectID = "Hpd-Io-4dP"; */
+"Hpd-Io-4dP.text" = "TIMER NAME";
+
+/* Class = "UILabel"; text = " "; ObjectID = "II3-CA-tvV"; */
+"II3-CA-tvV.text" = " ";
+
+/* Class = "UILabel"; text = "Distro"; ObjectID = "JF6-VM-t1b"; */
+"JF6-VM-t1b.text" = "Distro";
+
+/* Class = "UILabel"; text = " "; ObjectID = "K2o-fw-DEs"; */
+"K2o-fw-DEs.text" = " ";
+
+/* Class = "UILabel"; text = " "; ObjectID = "L9Q-hD-lTV"; */
+"L9Q-hD-lTV.text" = " ";
+
+/* Class = "UITabBarItem"; title = "Item"; ObjectID = "M9n-KI-j1w"; */
+"M9n-KI-j1w.title" = "Item";
+
+/* Class = "UILabel"; text = " "; ObjectID = "MKh-EE-kg6"; */
+"MKh-EE-kg6.text" = " ";
+
+/* Class = "UILabel"; text = "BOUQUET"; ObjectID = "Mh7-Gq-RFV"; */
+"Mh7-Gq-RFV.text" = "BOUQUET";
+
+/* Class = "UILabel"; text = "Service Name"; ObjectID = "N0I-aK-CQe"; */
+"N0I-aK-CQe.text" = "Service Name";
+
+/* Class = "UILabel"; text = "3.5 GB"; ObjectID = "NjF-yj-xar"; */
+"NjF-yj-xar.text" = "3.5 GB";
+
+/* Class = "UILabel"; text = "Vendor"; ObjectID = "P4B-2l-jeD"; */
+"P4B-2l-jeD.text" = "Vendor";
+
+/* Class = "UILabel"; text = "Service Name"; ObjectID = "PLA-le-YN6"; */
+"PLA-le-YN6.text" = "Service Name";
+
+/* Class = "UIButton"; normalTitle = "DELETE RECORDING"; ObjectID = "PhS-4z-ozl"; */
+"PhS-4z-ozl.normalTitle" = "DELETE RECORDING";
+
+/* Class = "UILabel"; text = " month"; ObjectID = "QAO-1x-vYA"; */
+"QAO-1x-vYA.text" = " month";
+
+/* Class = "UIButton"; normalTitle = "Reload"; ObjectID = "QEi-UQ-oPk"; */
+"QEi-UQ-oPk.normalTitle" = "Reload";
+
+/* Class = "UILabel"; text = " "; ObjectID = "QdH-Dw-FAG"; */
+"QdH-Dw-FAG.text" = " ";
+
+/* Class = "UILabel"; text = "2h 21 min"; ObjectID = "Rg3-73-SFA"; */
+"Rg3-73-SFA.text" = "2h 21 min";
+
+/* Class = "UILabel"; text = "RECORDINGS"; ObjectID = "SHh-w7-Z74"; */
+"SHh-w7-Z74.text" = "RECORDINGS";
+
+/* Class = "UILabel"; text = "SERVICE"; ObjectID = "SdK-La-zHc"; */
+"SdK-La-zHc.text" = "SERVICE";
+
+/* Class = "UILabel"; text = "12 january 2018"; ObjectID = "Tgc-eJ-NLb"; */
+"Tgc-eJ-NLb.text" = "12 january 2018";
+
+/* Class = "UIViewController"; title = "Recordings"; ObjectID = "TpI-GQ-dF8"; */
+"TpI-GQ-dF8.title" = "Recordings";
+
+/* Class = "UILabel"; text = " 2222"; ObjectID = "Xc4-kH-49p"; */
+"Xc4-kH-49p.text" = " 2222";
+
+/* Class = "UIButton"; normalTitle = "▶ PLAY"; ObjectID = "Xpd-fN-9J6"; */
+"Xpd-fN-9J6.normalTitle" = "▶ PLAY";
+
+/* Class = "UILabel"; text = " "; ObjectID = "aqT-Qv-Om9"; */
+"aqT-Qv-Om9.text" = " ";
+
+/* Class = "UIButton"; normalTitle = "Cancel"; ObjectID = "bbZ-ko-bDE"; */
+"bbZ-ko-bDE.normalTitle" = "Cancel";
+
+/* Class = "UILabel"; text = "It alllows You to see channels"; ObjectID = "c8Q-Y3-jGb"; */
+"c8Q-Y3-jGb.text" = "It alllows You to see channels";
+
+/* Class = "UILabel"; text = "Watching channels"; ObjectID = "crI-LJ-YXo"; */
+"crI-LJ-YXo.text" = "Watching channels";
+
+/* Class = "UILabel"; text = "0:00"; ObjectID = "dYf-zv-K7Y"; */
+"dYf-zv-K7Y.text" = "0:00";
+
+/* Class = "UILabel"; text = " "; ObjectID = "dfk-Xb-9DQ"; */
+"dfk-Xb-9DQ.text" = " ";
+
+/* Class = "UILabel"; text = "TIME"; ObjectID = "eTD-mb-g0W"; */
+"eTD-mb-g0W.text" = "TIME";
+
+/* Class = "UILabel"; text = "EPG"; ObjectID = "hM3-SV-gz2"; */
+"hM3-SV-gz2.text" = "EPG";
+
+/* Class = "UIViewController"; title = "Settings"; ObjectID = "hly-5H-1sV"; */
+"hly-5H-1sV.title" = "Settings";
+
+/* Class = "UILabel"; text = "No timers and recordings available on the STB"; ObjectID = "iWw-me-AGL"; */
+"iWw-me-AGL.text" = "No timers and recordings available on the STB";
+
+/* Class = "UILabel"; text = " "; ObjectID = "icV-Ag-WGI"; */
+"icV-Ag-WGI.text" = " ";
+
+/* Class = "UILabel"; text = "DETAILS"; ObjectID = "jn9-nd-Ngk"; */
+"jn9-nd-Ngk.text" = "DETAILS";
+
+/* Class = "UILabel"; text = "CANAL+"; ObjectID = "kE0-Qa-neo"; */
+"kE0-Qa-neo.text" = "CANAL+";
+
+/* Class = "UIViewController"; title = "EPG"; ObjectID = "kIq-F1-eEz"; */
+"kIq-F1-eEz.title" = "EPG";
+
+/* Class = "UILabel"; text = " "; ObjectID = "kOq-jQ-wxh"; */
+"kOq-jQ-wxh.text" = " ";
+
+/* Class = "UILabel"; text = "DATE"; ObjectID = "kVI-mU-4iD"; */
+"kVI-mU-4iD.text" = "DATE";
+
+/* Class = "UILabel"; text = " "; ObjectID = "lIC-Vz-5rH"; */
+"lIC-Vz-5rH.text" = " ";
+
+/* Class = "UIButton"; normalTitle = "TURN OFF RECEIVER"; ObjectID = "lvG-Q7-Vna"; */
+"lvG-Q7-Vna.normalTitle" = "TURN OFF RECEIVER";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "lyn-Rw-0hY"; */
+"lyn-Rw-0hY.text" = "Label";
+
+/* Class = "UILabel"; text = " "; ObjectID = "odc-MI-uUn"; */
+"odc-MI-uUn.text" = " ";
+
+/* Class = "UILabel"; text = "SETTINGS"; ObjectID = "ouW-5z-h3i"; */
+"ouW-5z-h3i.text" = "SETTINGS";
+
+/* Class = "UILabel"; text = "REC"; ObjectID = "prQ-Jm-gfO"; */
+"prQ-Jm-gfO.text" = "REC";
+
+/* Class = "UITabBarItem"; title = "Item"; ObjectID = "rsH-dH-vCg"; */
+"rsH-dH-vCg.title" = "Item";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "voL-ld-PYw"; */
+"voL-ld-PYw.text" = "Label";
+
+/* Class = "UILabel"; text = "Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt, explicabo. Nemo enim ipsam voluptatem, quia voluptas sit, aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos, qui ratione voluptatem sequi nesciunt, neque porro quisquam est, qui dolorem ipsum, quia dolor sit, amet, consectetur, adipisci velit, sed quia non numquam"; ObjectID = "wRW-gQ-3ka"; */
+"wRW-gQ-3ka.text" = "Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt, explicabo. Nemo enim ipsam voluptatem, quia voluptas sit, aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos, qui ratione voluptatem sequi nesciunt, neque porro quisquam est, qui dolorem ipsum, quia dolor sit, amet, consectetur, adipisci velit, sed quia non numquam";
+
+/* Class = "UILabel"; text = "DET"; ObjectID = "xIm-dw-doZ"; */
+"xIm-dw-doZ.text" = "DET";
+
+/* Class = "UIButton"; normalTitle = "Manual settings"; ObjectID = "xh6-w6-aJD"; */
+"xh6-w6-aJD.normalTitle" = "Manual settings";
+
+/* Class = "UILabel"; text = "Some Title of the movie"; ObjectID = "xoP-jw-7rn"; */
+"xoP-jw-7rn.text" = "Some Title of the movie";
+
+/* Class = "UILabel"; text = "Title"; ObjectID = "yPp-cH-RAo"; */
+"yPp-cH-RAo.text" = "Title";
+
+/* Class = "UIButton"; normalTitle = "▶"; ObjectID = "zZM-Zf-WeX"; */
+"zZM-Zf-WeX.normalTitle" = "▶";
+
+/* Class = "UIButton"; normalTitle = "◀ "; ObjectID = "ziY-QO-Lnh"; */
+"ziY-QO-Lnh.normalTitle" = "◀ ";
+
+/* Class = "UILabel"; text = " 22"; ObjectID = "zrp-5c-hGq"; */
+"zrp-5c-hGq.text" = " 22";

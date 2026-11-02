@@ -1,0 +1,760 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2E36D4EF30729BD90002C1DA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2E36D4EE30729BD90002C1DA /* PrivacyInfo.xcprivacy */; };
+		68269E8E101D94604115548C /* Pods_EnigmaTV.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6473E0A0B9DABA215C76A0F /* Pods_EnigmaTV.framework */; };
+		AF0B1FD123C760EA00D46075 /* AudioTrackViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF0B1FD023C760EA00D46075 /* AudioTrackViewController.swift */; };
+		AF1394B123CCBBCA006709F8 /* ChannelSwipeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF1394B023CCBBCA006709F8 /* ChannelSwipeViewController.swift */; };
+		E0034C51243E6F45003AC065 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0034C50243E6F45003AC065 /* StoreKit.framework */; };
+		E0034C53243E7274003AC065 /* IAPHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0034C52243E7273003AC065 /* IAPHelper.swift */; };
+		E0034C55243E77D3003AC065 /* IAPControllerProductIds.plist in Resources */ = {isa = PBXBuildFile; fileRef = E0034C54243E77D3003AC065 /* IAPControllerProductIds.plist */; };
+		E0034C57243E8891003AC065 /* PayViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0034C56243E8891003AC065 /* PayViewController.swift */; };
+		E00C213020B21E0400CF37E7 /* MVCProt.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00C212F20B21E0400CF37E7 /* MVCProt.swift */; };
+		E01874CF208A7E7D00D3A0CA /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E01874CE208A7E7D00D3A0CA /* CloudKit.framework */; };
+		E01D93F9200D1F1E00A962E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D93F8200D1F1E00A962E6 /* AppDelegate.swift */; };
+		E01D93FB200D1F1E00A962E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D93FA200D1F1E00A962E6 /* ViewController.swift */; };
+		E01D93FE200D1F1E00A962E6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E01D93FC200D1F1E00A962E6 /* Main.storyboard */; };
+		E01D9400200D1F1E00A962E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E01D93FF200D1F1E00A962E6 /* Assets.xcassets */; };
+		E01D940B200D20B800A962E6 /* STBAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D940A200D20B800A962E6 /* STBAPI.swift */; };
+		E01D940F200D21A000A962E6 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D940E200D21A000A962E6 /* Service.swift */; };
+		E01D9411200D21C300A962E6 /* Servicelist.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D9410200D21C300A962E6 /* Servicelist.swift */; };
+		E01D9413200D275B00A962E6 /* EpgEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D9412200D275B00A962E6 /* EpgEvent.swift */; };
+		E01D9415200D5F9600A962E6 /* StreamView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D9414200D5F9600A962E6 /* StreamView.swift */; };
+		E01D9427200D96F400A962E6 /* Eventlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = E01D9426200D96F400A962E6 /* Eventlist.swift */; };
+		E02C8EE1246F414C00AFD25A /* SDWebImage in Frameworks */ = {isa = PBXBuildFile; productRef = E02C8EE0246F414C00AFD25A /* SDWebImage */; };
+		E02C8EE3246F465200AFD25A /* DataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E02C8EE2246F465200AFD25A /* DataProvider.swift */; };
+		E03625DF2029078400CC3F13 /* MovieInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03625DE2029078400CC3F13 /* MovieInfoViewController.swift */; };
+		E03918E7209068E20056A7A8 /* TimerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E03918E6209068E20056A7A8 /* TimerCell.swift */; };
+		E05132ED20CFE82100A67E6D /* TunerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E05132EC20CFE82100A67E6D /* TunerInfo.swift */; };
+		E05132EF20CFED3900A67E6D /* TunerInfoResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = E05132EE20CFED3900A67E6D /* TunerInfoResponse.swift */; };
+		E05132F120D06FC800A67E6D /* TunerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E05132F020D06FC800A67E6D /* TunerCell.swift */; };
+		E053A8F5201A639700E06CA2 /* InfoViewDataProviderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E053A8F4201A639700E06CA2 /* InfoViewDataProviderDelegate.swift */; };
+		E053A8F7201A647D00E06CA2 /* EventDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E053A8F6201A647D00E06CA2 /* EventDataProvider.swift */; };
+		E053A8F9201A866800E06CA2 /* TimeshiftDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E053A8F8201A866800E06CA2 /* TimeshiftDataProvider.swift */; };
+		E06653A62023C3EC00C559DE /* MovieDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06653A52023C3EC00C559DE /* MovieDataProvider.swift */; };
+		E0680F202085CE060040A99B /* HelpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0680F1F2085CE060040A99B /* HelpViewController.swift */; };
+		E06D9D42207F8C0E00C4E824 /* NetworkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06D9D41207F8C0E00C4E824 /* NetworkHelper.swift */; };
+		E06D9D44207F9B0800C4E824 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = E06D9D43207F9B0800C4E824 /* Settings.bundle */; };
+		E079CB12247E65FC009EB633 /* NowCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E079CB11247E65FC009EB633 /* NowCollectionViewCell.swift */; };
+		E079CB1424830B58009EB633 /* TVEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E079CB1324830B57009EB633 /* TVEventViewController.swift */; };
+		E079CB1624840315009EB633 /* NowTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E079CB1524840315009EB633 /* NowTableViewCell.swift */; };
+		E079CB1824840322009EB633 /* NextTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E079CB1724840322009EB633 /* NextTableViewCell.swift */; };
+		E0890A79247D7CEF006DC5D4 /* BouquetsGalleryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0890A78247D7CEF006DC5D4 /* BouquetsGalleryViewController.swift */; };
+		E0890A7F247DB3DC006DC5D4 /* ScrollableSectionCollectionViewLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0890A7E247DB3DC006DC5D4 /* ScrollableSectionCollectionViewLayout.swift */; };
+		E0890A81247E516D006DC5D4 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0890A80247E516D006DC5D4 /* HeaderView.swift */; };
+		E08A2A4B20AAF00B0001A88B /* Movies2ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08A2A4A20AAF00B0001A88B /* Movies2ViewController.swift */; };
+		E08A4014207FD7DC00BA8E44 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08A4013207FD7DC00BA8E44 /* SettingsViewController.swift */; };
+		E08B4A7D201760C80087C81E /* Connection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08B4A7C201760C80087C81E /* Connection.swift */; };
+		E08B4A7F2017EF550087C81E /* URLConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = E08B4A7E2017EF550087C81E /* URLConnection.swift */; };
+		E09128182090A8560042D63C /* CommonTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09128172090A8560042D63C /* CommonTableViewCell.swift */; };
+		E096BBCA23D10B0500B8C263 /* UIButtonRounded.swift in Sources */ = {isa = PBXBuildFile; fileRef = E096BBC923D10B0500B8C263 /* UIButtonRounded.swift */; };
+		E0A7ED732012A303005CE24B /* MovieInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A7ED722012A303005CE24B /* MovieInfo.swift */; };
+		E0AE3CFB2015FB1600AECF61 /* TimeShiftRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0AE3CFA2015FB1600AECF61 /* TimeShiftRecorder.swift */; };
+		E0B890FC23834F23008722B6 /* UIVisualEffectExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0B890FB23834F23008722B6 /* UIVisualEffectExtension.swift */; };
+		E0BFA0BF200FD5DC00056CDB /* RecordingTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BFA0BE200FD5DC00056CDB /* RecordingTimer.swift */; };
+		E0BFA0C1200FF8A300056CDB /* Movie.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BFA0C0200FF8A300056CDB /* Movie.swift */; };
+		E0BFA0C3200FFB2D00056CDB /* MovieCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BFA0C2200FFB2D00056CDB /* MovieCell.swift */; };
+		E0BFA0C5200FFB5E00056CDB /* MoviesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BFA0C4200FFB5E00056CDB /* MoviesViewController.swift */; };
+		E0BFA0CE2010949D00056CDB /* InfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0BFA0CD2010949D00056CDB /* InfoViewController.swift */; };
+		E0DBA62420D83AE0005B4AD9 /* XMLDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0DBA62320D83AE0005B4AD9 /* XMLDecoder.swift */; };
+		E0DBA62620D83CC8005B4AD9 /* APIDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0DBA62520D83CC8005B4AD9 /* APIDecoder.swift */; };
+		E0E6B8332372EFA30078C405 /* MenuTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E6B8322372EFA30078C405 /* MenuTabBarController.swift */; };
+		E0FE175D20AB136400F5F1C6 /* MovieCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FE175C20AB136400F5F1C6 /* MovieCollectionViewCell.swift */; };
+		E0FE175F20AB1E0400F5F1C6 /* CommonCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FE175E20AB1E0400F5F1C6 /* CommonCollectionViewCell.swift */; };
+		E0FE176120AB473400F5F1C6 /* TimerCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0FE176020AB473400F5F1C6 /* TimerCollectionViewCell.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2E36D4EE30729BD90002C1DA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		48A6B7AC4C8387FD08A14F21 /* Pods-EnigmaTV.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EnigmaTV.debug.xcconfig"; path = "Target Support Files/Pods-EnigmaTV/Pods-EnigmaTV.debug.xcconfig"; sourceTree = "<group>"; };
+		AF0B1FD023C760EA00D46075 /* AudioTrackViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTrackViewController.swift; sourceTree = "<group>"; };
+		AF1394B023CCBBCA006709F8 /* ChannelSwipeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelSwipeViewController.swift; sourceTree = "<group>"; };
+		BD7FDBC3DC5E0AF5EEB4BB36 /* Pods-EnigmaTV.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EnigmaTV.release.xcconfig"; path = "Target Support Files/Pods-EnigmaTV/Pods-EnigmaTV.release.xcconfig"; sourceTree = "<group>"; };
+		E0034C50243E6F45003AC065 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		E0034C52243E7273003AC065 /* IAPHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAPHelper.swift; sourceTree = "<group>"; };
+		E0034C54243E77D3003AC065 /* IAPControllerProductIds.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = IAPControllerProductIds.plist; sourceTree = "<group>"; };
+		E0034C56243E8891003AC065 /* PayViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayViewController.swift; sourceTree = "<group>"; };
+		E00C212F20B21E0400CF37E7 /* MVCProt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MVCProt.swift; sourceTree = "<group>"; };
+		E01874CD208A7E6F00D3A0CA /* EnigmaTV.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EnigmaTV.entitlements; sourceTree = "<group>"; };
+		E01874CE208A7E7D00D3A0CA /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		E01D93F5200D1F1E00A962E6 /* EnigmaTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EnigmaTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E01D93F8200D1F1E00A962E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		E01D93FA200D1F1E00A962E6 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		E01D93FD200D1F1E00A962E6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		E01D93FF200D1F1E00A962E6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E01D9401200D1F1E00A962E6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E01D940A200D20B800A962E6 /* STBAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STBAPI.swift; sourceTree = "<group>"; };
+		E01D940E200D21A000A962E6 /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		E01D9410200D21C300A962E6 /* Servicelist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Servicelist.swift; sourceTree = "<group>"; };
+		E01D9412200D275B00A962E6 /* EpgEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpgEvent.swift; sourceTree = "<group>"; };
+		E01D9414200D5F9600A962E6 /* StreamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamView.swift; sourceTree = "<group>"; };
+		E01D9419200D6AFC00A962E6 /* TVVLCKit-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TVVLCKit-Bridging-Header.h"; sourceTree = "<group>"; };
+		E01D9426200D96F400A962E6 /* Eventlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Eventlist.swift; sourceTree = "<group>"; };
+		E02C8EE2246F465200AFD25A /* DataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataProvider.swift; sourceTree = "<group>"; };
+		E03625DE2029078400CC3F13 /* MovieInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieInfoViewController.swift; sourceTree = "<group>"; };
+		E03918E6209068E20056A7A8 /* TimerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerCell.swift; sourceTree = "<group>"; };
+		E05132EC20CFE82100A67E6D /* TunerInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TunerInfo.swift; sourceTree = "<group>"; };
+		E05132EE20CFED3900A67E6D /* TunerInfoResponse.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TunerInfoResponse.swift; sourceTree = "<group>"; };
+		E05132F020D06FC800A67E6D /* TunerCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TunerCell.swift; sourceTree = "<group>"; };
+		E053A8F4201A639700E06CA2 /* InfoViewDataProviderDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewDataProviderDelegate.swift; sourceTree = "<group>"; };
+		E053A8F6201A647D00E06CA2 /* EventDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDataProvider.swift; sourceTree = "<group>"; };
+		E053A8F8201A866800E06CA2 /* TimeshiftDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeshiftDataProvider.swift; sourceTree = "<group>"; };
+		E06653A52023C3EC00C559DE /* MovieDataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieDataProvider.swift; sourceTree = "<group>"; };
+		E0680F1F2085CE060040A99B /* HelpViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpViewController.swift; sourceTree = "<group>"; };
+		E06D9D41207F8C0E00C4E824 /* NetworkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkHelper.swift; sourceTree = "<group>"; };
+		E06D9D43207F9B0800C4E824 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		E079CB11247E65FC009EB633 /* NowCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowCollectionViewCell.swift; sourceTree = "<group>"; };
+		E079CB1324830B57009EB633 /* TVEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVEventViewController.swift; sourceTree = "<group>"; };
+		E079CB1524840315009EB633 /* NowTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowTableViewCell.swift; sourceTree = "<group>"; };
+		E079CB1724840322009EB633 /* NextTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextTableViewCell.swift; sourceTree = "<group>"; };
+		E0890A78247D7CEF006DC5D4 /* BouquetsGalleryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BouquetsGalleryViewController.swift; sourceTree = "<group>"; };
+		E0890A7E247DB3DC006DC5D4 /* ScrollableSectionCollectionViewLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollableSectionCollectionViewLayout.swift; sourceTree = "<group>"; };
+		E0890A80247E516D006DC5D4 /* HeaderView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
+		E08A2A4A20AAF00B0001A88B /* Movies2ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movies2ViewController.swift; sourceTree = "<group>"; };
+		E08A4013207FD7DC00BA8E44 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		E08B4A7C201760C80087C81E /* Connection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connection.swift; sourceTree = "<group>"; };
+		E08B4A7E2017EF550087C81E /* URLConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLConnection.swift; sourceTree = "<group>"; };
+		E09128172090A8560042D63C /* CommonTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonTableViewCell.swift; sourceTree = "<group>"; };
+		E096BBC923D10B0500B8C263 /* UIButtonRounded.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIButtonRounded.swift; sourceTree = "<group>"; };
+		E0A7ED722012A303005CE24B /* MovieInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieInfo.swift; sourceTree = "<group>"; };
+		E0AE3CFA2015FB1600AECF61 /* TimeShiftRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeShiftRecorder.swift; sourceTree = "<group>"; };
+		E0B890FB23834F23008722B6 /* UIVisualEffectExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIVisualEffectExtension.swift; sourceTree = "<group>"; };
+		E0BFA0BE200FD5DC00056CDB /* RecordingTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingTimer.swift; sourceTree = "<group>"; };
+		E0BFA0C0200FF8A300056CDB /* Movie.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Movie.swift; sourceTree = "<group>"; };
+		E0BFA0C2200FFB2D00056CDB /* MovieCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieCell.swift; sourceTree = "<group>"; };
+		E0BFA0C4200FFB5E00056CDB /* MoviesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesViewController.swift; sourceTree = "<group>"; };
+		E0BFA0CD2010949D00056CDB /* InfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewController.swift; sourceTree = "<group>"; };
+		E0DBA62320D83AE0005B4AD9 /* XMLDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XMLDecoder.swift; sourceTree = "<group>"; };
+		E0DBA62520D83CC8005B4AD9 /* APIDecoder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIDecoder.swift; sourceTree = "<group>"; };
+		E0E6B8322372EFA30078C405 /* MenuTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuTabBarController.swift; sourceTree = "<group>"; };
+		E0E6B8352372F02E0078C405 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		E0FE175C20AB136400F5F1C6 /* MovieCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MovieCollectionViewCell.swift; sourceTree = "<group>"; };
+		E0FE175E20AB1E0400F5F1C6 /* CommonCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonCollectionViewCell.swift; sourceTree = "<group>"; };
+		E0FE176020AB473400F5F1C6 /* TimerCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerCollectionViewCell.swift; sourceTree = "<group>"; };
+		E6473E0A0B9DABA215C76A0F /* Pods_EnigmaTV.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_EnigmaTV.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E01D93F2200D1F1E00A962E6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E01874CF208A7E7D00D3A0CA /* CloudKit.framework in Frameworks */,
+				E0034C51243E6F45003AC065 /* StoreKit.framework in Frameworks */,
+				E02C8EE1246F414C00AFD25A /* SDWebImage in Frameworks */,
+				68269E8E101D94604115548C /* Pods_EnigmaTV.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7C3E15D78A4B18CDCA3BA241 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				48A6B7AC4C8387FD08A14F21 /* Pods-EnigmaTV.debug.xcconfig */,
+				BD7FDBC3DC5E0AF5EEB4BB36 /* Pods-EnigmaTV.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		E01D93EC200D1F1E00A962E6 = {
+			isa = PBXGroup;
+			children = (
+				2E36D4EE30729BD90002C1DA /* PrivacyInfo.xcprivacy */,
+				E06D9D43207F9B0800C4E824 /* Settings.bundle */,
+				E01D93F7200D1F1E00A962E6 /* EnigmaTV */,
+				E01D93F6200D1F1E00A962E6 /* Products */,
+				E01D9407200D20A100A962E6 /* Frameworks */,
+				7C3E15D78A4B18CDCA3BA241 /* Pods */,
+			);
+			sourceTree = "<group>";
+		};
+		E01D93F6200D1F1E00A962E6 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E01D93F5200D1F1E00A962E6 /* EnigmaTV.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E01D93F7200D1F1E00A962E6 /* EnigmaTV */ = {
+			isa = PBXGroup;
+			children = (
+				E01874CD208A7E6F00D3A0CA /* EnigmaTV.entitlements */,
+				E01D93F8200D1F1E00A962E6 /* AppDelegate.swift */,
+				E01D940A200D20B800A962E6 /* STBAPI.swift */,
+				E0BFA0CB20107FB100056CDB /* DataModel */,
+				E0BFA0CA20107FA700056CDB /* ViewControllers */,
+				E01D93FC200D1F1E00A962E6 /* Main.storyboard */,
+				E01D93FF200D1F1E00A962E6 /* Assets.xcassets */,
+				E01D9401200D1F1E00A962E6 /* Info.plist */,
+				E01D9419200D6AFC00A962E6 /* TVVLCKit-Bridging-Header.h */,
+				E0B890FB23834F23008722B6 /* UIVisualEffectExtension.swift */,
+				E096BBC923D10B0500B8C263 /* UIButtonRounded.swift */,
+				E0034C54243E77D3003AC065 /* IAPControllerProductIds.plist */,
+			);
+			path = EnigmaTV;
+			sourceTree = "<group>";
+		};
+		E01D9407200D20A100A962E6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E0034C50243E6F45003AC065 /* StoreKit.framework */,
+				E01874CE208A7E7D00D3A0CA /* CloudKit.framework */,
+				E6473E0A0B9DABA215C76A0F /* Pods_EnigmaTV.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E05132F220D0704C00A67E6D /* SettingsList */ = {
+			isa = PBXGroup;
+			children = (
+				E05132F020D06FC800A67E6D /* TunerCell.swift */,
+				E08A4013207FD7DC00BA8E44 /* SettingsViewController.swift */,
+			);
+			path = SettingsList;
+			sourceTree = "<group>";
+		};
+		E0BFA0C620107F3500056CDB /* MoviesList */ = {
+			isa = PBXGroup;
+			children = (
+				E0BFA0C2200FFB2D00056CDB /* MovieCell.swift */,
+				E03918E6209068E20056A7A8 /* TimerCell.swift */,
+				E09128172090A8560042D63C /* CommonTableViewCell.swift */,
+				E0FE175E20AB1E0400F5F1C6 /* CommonCollectionViewCell.swift */,
+				E0BFA0C4200FFB5E00056CDB /* MoviesViewController.swift */,
+				E00C212F20B21E0400CF37E7 /* MVCProt.swift */,
+				E03625DE2029078400CC3F13 /* MovieInfoViewController.swift */,
+				E08A2A4A20AAF00B0001A88B /* Movies2ViewController.swift */,
+				E0FE175C20AB136400F5F1C6 /* MovieCollectionViewCell.swift */,
+				E0FE176020AB473400F5F1C6 /* TimerCollectionViewCell.swift */,
+			);
+			path = MoviesList;
+			sourceTree = "<group>";
+		};
+		E0BFA0C720107F5E00056CDB /* EPGList */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = EPGList;
+			sourceTree = "<group>";
+		};
+		E0BFA0C820107F6D00056CDB /* BouquetList */ = {
+			isa = PBXGroup;
+			children = (
+				E0890A78247D7CEF006DC5D4 /* BouquetsGalleryViewController.swift */,
+				E0890A80247E516D006DC5D4 /* HeaderView.swift */,
+				E0890A7E247DB3DC006DC5D4 /* ScrollableSectionCollectionViewLayout.swift */,
+				E079CB11247E65FC009EB633 /* NowCollectionViewCell.swift */,
+				E079CB1324830B57009EB633 /* TVEventViewController.swift */,
+				E079CB1524840315009EB633 /* NowTableViewCell.swift */,
+				E079CB1724840322009EB633 /* NextTableViewCell.swift */,
+			);
+			path = BouquetList;
+			sourceTree = "<group>";
+		};
+		E0BFA0C920107F9E00056CDB /* PlayerView */ = {
+			isa = PBXGroup;
+			children = (
+				E01D93FA200D1F1E00A962E6 /* ViewController.swift */,
+				E0034C52243E7273003AC065 /* IAPHelper.swift */,
+				E01D9414200D5F9600A962E6 /* StreamView.swift */,
+				E08B4A7E2017EF550087C81E /* URLConnection.swift */,
+				E0AE3CFA2015FB1600AECF61 /* TimeShiftRecorder.swift */,
+				E08B4A7C201760C80087C81E /* Connection.swift */,
+				E06D9D41207F8C0E00C4E824 /* NetworkHelper.swift */,
+				AF0B1FD023C760EA00D46075 /* AudioTrackViewController.swift */,
+				AF1394B023CCBBCA006709F8 /* ChannelSwipeViewController.swift */,
+				E0034C56243E8891003AC065 /* PayViewController.swift */,
+			);
+			path = PlayerView;
+			sourceTree = "<group>";
+		};
+		E0BFA0CA20107FA700056CDB /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				E0BFA0CC2010948E00056CDB /* InfoView */,
+				E0BFA0C920107F9E00056CDB /* PlayerView */,
+				E0BFA0C820107F6D00056CDB /* BouquetList */,
+				E0BFA0C720107F5E00056CDB /* EPGList */,
+				E0BFA0C620107F3500056CDB /* MoviesList */,
+				E05132F220D0704C00A67E6D /* SettingsList */,
+				E0680F1F2085CE060040A99B /* HelpViewController.swift */,
+				E0E6B8322372EFA30078C405 /* MenuTabBarController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		E0BFA0CB20107FB100056CDB /* DataModel */ = {
+			isa = PBXGroup;
+			children = (
+				E0DBA62220D83AC9005B4AD9 /* Decoders */,
+				E01D940E200D21A000A962E6 /* Service.swift */,
+				E05132EC20CFE82100A67E6D /* TunerInfo.swift */,
+				E05132EE20CFED3900A67E6D /* TunerInfoResponse.swift */,
+				E01D9410200D21C300A962E6 /* Servicelist.swift */,
+				E01D9412200D275B00A962E6 /* EpgEvent.swift */,
+				E01D9426200D96F400A962E6 /* Eventlist.swift */,
+				E0BFA0C0200FF8A300056CDB /* Movie.swift */,
+				E0BFA0BE200FD5DC00056CDB /* RecordingTimer.swift */,
+				E0A7ED722012A303005CE24B /* MovieInfo.swift */,
+				E02C8EE2246F465200AFD25A /* DataProvider.swift */,
+			);
+			path = DataModel;
+			sourceTree = "<group>";
+		};
+		E0BFA0CC2010948E00056CDB /* InfoView */ = {
+			isa = PBXGroup;
+			children = (
+				E0BFA0CD2010949D00056CDB /* InfoViewController.swift */,
+				E053A8F6201A647D00E06CA2 /* EventDataProvider.swift */,
+				E053A8F8201A866800E06CA2 /* TimeshiftDataProvider.swift */,
+				E06653A52023C3EC00C559DE /* MovieDataProvider.swift */,
+				E053A8F4201A639700E06CA2 /* InfoViewDataProviderDelegate.swift */,
+			);
+			path = InfoView;
+			sourceTree = "<group>";
+		};
+		E0DBA62220D83AC9005B4AD9 /* Decoders */ = {
+			isa = PBXGroup;
+			children = (
+				E0DBA62320D83AE0005B4AD9 /* XMLDecoder.swift */,
+				E0DBA62520D83CC8005B4AD9 /* APIDecoder.swift */,
+			);
+			path = Decoders;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E01D93F4200D1F1E00A962E6 /* EnigmaTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E01D9404200D1F1E00A962E6 /* Build configuration list for PBXNativeTarget "EnigmaTV" */;
+			buildPhases = (
+				3A8267760F60840DE07C392B /* [CP] Check Pods Manifest.lock */,
+				E01D93F1200D1F1E00A962E6 /* Sources */,
+				E01D93F2200D1F1E00A962E6 /* Frameworks */,
+				E01D93F3200D1F1E00A962E6 /* Resources */,
+				61A9D89EFDD98FC5CD7E7AA6 /* [CP] Embed Pods Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EnigmaTV;
+			packageProductDependencies = (
+				E02C8EE0246F414C00AFD25A /* SDWebImage */,
+			);
+			productName = EnigmaTV;
+			productReference = E01D93F5200D1F1E00A962E6 /* EnigmaTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E01D93ED200D1F1E00A962E6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1010;
+				LastUpgradeCheck = 1150;
+				ORGANIZATIONNAME = "Blazej Zyglarski";
+				TargetAttributes = {
+					E01D93F4200D1F1E00A962E6 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
+			buildConfigurationList = E01D93F0200D1F1E00A962E6 /* Build configuration list for PBXProject "EnigmaTV" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E01D93EC200D1F1E00A962E6;
+			packageReferences = (
+				E02C8EDF246F414C00AFD25A /* XCRemoteSwiftPackageReference "SDWebImage" */,
+			);
+			productRefGroup = E01D93F6200D1F1E00A962E6 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E01D93F4200D1F1E00A962E6 /* EnigmaTV */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E01D93F3200D1F1E00A962E6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E01D9400200D1F1E00A962E6 /* Assets.xcassets in Resources */,
+				E06D9D44207F9B0800C4E824 /* Settings.bundle in Resources */,
+				E0034C55243E77D3003AC065 /* IAPControllerProductIds.plist in Resources */,
+				2E36D4EF30729BD90002C1DA /* PrivacyInfo.xcprivacy in Resources */,
+				E01D93FE200D1F1E00A962E6 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3A8267760F60840DE07C392B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-EnigmaTV-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		61A9D89EFDD98FC5CD7E7AA6 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-EnigmaTV/Pods-EnigmaTV-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AERecord/AERecord.framework",
+				"${BUILT_PRODUCTS_DIR}/ReachabilitySwift/Reachability.framework",
+				"${BUILT_PRODUCTS_DIR}/SWXMLHash/SWXMLHash.framework",
+				"${BUILT_PRODUCTS_DIR}/SwiftyStoreKit/SwiftyStoreKit.framework",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/TVVLCKit/TVVLCKit.framework/TVVLCKit",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AERecord.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Reachability.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SWXMLHash.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SwiftyStoreKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/TVVLCKit.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-EnigmaTV/Pods-EnigmaTV-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E01D93F1200D1F1E00A962E6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E0BFA0C3200FFB2D00056CDB /* MovieCell.swift in Sources */,
+				E08B4A7F2017EF550087C81E /* URLConnection.swift in Sources */,
+				E08A2A4B20AAF00B0001A88B /* Movies2ViewController.swift in Sources */,
+				E0DBA62620D83CC8005B4AD9 /* APIDecoder.swift in Sources */,
+				E01D940B200D20B800A962E6 /* STBAPI.swift in Sources */,
+				E079CB12247E65FC009EB633 /* NowCollectionViewCell.swift in Sources */,
+				E08B4A7D201760C80087C81E /* Connection.swift in Sources */,
+				E0BFA0BF200FD5DC00056CDB /* RecordingTimer.swift in Sources */,
+				E0BFA0CE2010949D00056CDB /* InfoViewController.swift in Sources */,
+				E02C8EE3246F465200AFD25A /* DataProvider.swift in Sources */,
+				E053A8F5201A639700E06CA2 /* InfoViewDataProviderDelegate.swift in Sources */,
+				E0DBA62420D83AE0005B4AD9 /* XMLDecoder.swift in Sources */,
+				E0A7ED732012A303005CE24B /* MovieInfo.swift in Sources */,
+				E053A8F9201A866800E06CA2 /* TimeshiftDataProvider.swift in Sources */,
+				E05132F120D06FC800A67E6D /* TunerCell.swift in Sources */,
+				E01D9415200D5F9600A962E6 /* StreamView.swift in Sources */,
+				E0FE175F20AB1E0400F5F1C6 /* CommonCollectionViewCell.swift in Sources */,
+				E03625DF2029078400CC3F13 /* MovieInfoViewController.swift in Sources */,
+				E0890A79247D7CEF006DC5D4 /* BouquetsGalleryViewController.swift in Sources */,
+				E079CB1624840315009EB633 /* NowTableViewCell.swift in Sources */,
+				E079CB1824840322009EB633 /* NextTableViewCell.swift in Sources */,
+				E0034C53243E7274003AC065 /* IAPHelper.swift in Sources */,
+				E0FE175D20AB136400F5F1C6 /* MovieCollectionViewCell.swift in Sources */,
+				E079CB1424830B58009EB633 /* TVEventViewController.swift in Sources */,
+				E09128182090A8560042D63C /* CommonTableViewCell.swift in Sources */,
+				E0FE176120AB473400F5F1C6 /* TimerCollectionViewCell.swift in Sources */,
+				E0AE3CFB2015FB1600AECF61 /* TimeShiftRecorder.swift in Sources */,
+				E0BFA0C1200FF8A300056CDB /* Movie.swift in Sources */,
+				E01D940F200D21A000A962E6 /* Service.swift in Sources */,
+				E01D9427200D96F400A962E6 /* Eventlist.swift in Sources */,
+				E08A4014207FD7DC00BA8E44 /* SettingsViewController.swift in Sources */,
+				E0E6B8332372EFA30078C405 /* MenuTabBarController.swift in Sources */,
+				E06D9D42207F8C0E00C4E824 /* NetworkHelper.swift in Sources */,
+				E01D9411200D21C300A962E6 /* Servicelist.swift in Sources */,
+				AF1394B123CCBBCA006709F8 /* ChannelSwipeViewController.swift in Sources */,
+				E0890A81247E516D006DC5D4 /* HeaderView.swift in Sources */,
+				E0890A7F247DB3DC006DC5D4 /* ScrollableSectionCollectionViewLayout.swift in Sources */,
+				E01D93FB200D1F1E00A962E6 /* ViewController.swift in Sources */,
+				E0034C57243E8891003AC065 /* PayViewController.swift in Sources */,
+				E096BBCA23D10B0500B8C263 /* UIButtonRounded.swift in Sources */,
+				E03918E7209068E20056A7A8 /* TimerCell.swift in Sources */,
+				AF0B1FD123C760EA00D46075 /* AudioTrackViewController.swift in Sources */,
+				E0B890FC23834F23008722B6 /* UIVisualEffectExtension.swift in Sources */,
+				E01D9413200D275B00A962E6 /* EpgEvent.swift in Sources */,
+				E0680F202085CE060040A99B /* HelpViewController.swift in Sources */,
+				E05132ED20CFE82100A67E6D /* TunerInfo.swift in Sources */,
+				E05132EF20CFED3900A67E6D /* TunerInfoResponse.swift in Sources */,
+				E00C213020B21E0400CF37E7 /* MVCProt.swift in Sources */,
+				E053A8F7201A647D00E06CA2 /* EventDataProvider.swift in Sources */,
+				E01D93F9200D1F1E00A962E6 /* AppDelegate.swift in Sources */,
+				E0BFA0C5200FFB5E00056CDB /* MoviesViewController.swift in Sources */,
+				E06653A62023C3EC00C559DE /* MovieDataProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		E01D93FC200D1F1E00A962E6 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				E01D93FD200D1F1E00A962E6 /* Base */,
+				E0E6B8352372F02E0078C405 /* en */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		E01D9402200D1F1E00A962E6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TVOS_DEPLOYMENT_TARGET = 13.0;
+			};
+			name = Debug;
+		};
+		E01D9403200D1F1E00A962E6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TVOS_DEPLOYMENT_TARGET = 13.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		E01D9405200D1F1E00A962E6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 48A6B7AC4C8387FD08A14F21 /* Pods-EnigmaTV.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = EnigmaTV/EnigmaTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 74;
+				DEVELOPMENT_TEAM = 6YHYC2U9N4;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Pods/TVVLCKit-unstable/TVVLCKit-binary",
+				);
+				INFOPLIST_FILE = EnigmaTV/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Enigma 2 MR";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.74;
+				PRODUCT_BUNDLE_IDENTIFIER = pl.zyglarski.EnigmaTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "EnigmaTV/TVVLCKit-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 16.2;
+			};
+			name = Debug;
+		};
+		E01D9406200D1F1E00A962E6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD7FDBC3DC5E0AF5EEB4BB36 /* Pods-EnigmaTV.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = EnigmaTV/EnigmaTV.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 74;
+				DEVELOPMENT_TEAM = 6YHYC2U9N4;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/Pods/TVVLCKit-unstable/TVVLCKit-binary",
+				);
+				INFOPLIST_FILE = EnigmaTV/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Enigma 2 MR";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.74;
+				PRODUCT_BUNDLE_IDENTIFIER = pl.zyglarski.EnigmaTV;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "EnigmaTV/TVVLCKit-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 16.2;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E01D93F0200D1F1E00A962E6 /* Build configuration list for PBXProject "EnigmaTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E01D9402200D1F1E00A962E6 /* Debug */,
+				E01D9403200D1F1E00A962E6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E01D9404200D1F1E00A962E6 /* Build configuration list for PBXNativeTarget "EnigmaTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E01D9405200D1F1E00A962E6 /* Debug */,
+				E01D9406200D1F1E00A962E6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E02C8EDF246F414C00AFD25A /* XCRemoteSwiftPackageReference "SDWebImage" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImage";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.8.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E02C8EE0246F414C00AFD25A /* SDWebImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E02C8EDF246F414C00AFD25A /* XCRemoteSwiftPackageReference "SDWebImage" */;
+			productName = SDWebImage;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = E01D93ED200D1F1E00A962E6 /* Project object */;
+}

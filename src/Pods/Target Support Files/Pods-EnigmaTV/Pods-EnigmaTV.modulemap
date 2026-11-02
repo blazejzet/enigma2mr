@@ -1,0 +1,6 @@
+framework module Pods_EnigmaTV {
+  umbrella header "Pods-EnigmaTV-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -63,7 +63,7 @@ class NowCollectionViewCell: UICollectionViewCell {
         self.service = service
         self.bouquet = bouquet
         self.sref = service.servicereference ?? ""
-        self.label.text = service.displayName ?? ""
+        self.label.text = service.displayName ?? L("Unnamed channel")
         progress.alpha = 0.0
         time.alpha = 0.0
         duration.alpha = 0.0
@@ -84,7 +84,7 @@ class NowCollectionViewCell: UICollectionViewCell {
         self.bouquet = bouquet
         self.sref = service.servicereference ?? e.sref ?? ""
         // Without EPG OpenWebif sends "N/A" – show the channel name rather than that.
-        self.label.text = e.hasData ? e.title : service.displayName ?? ""
+        self.label.text = e.hasData ? e.title : service.displayName ?? L("Unnamed channel")
         poster.cancelPicon()   // a logo requested before the EPG arrived must not land on the artwork tile
         poster.image = UIImage(named: "poster_placeholder2")
 

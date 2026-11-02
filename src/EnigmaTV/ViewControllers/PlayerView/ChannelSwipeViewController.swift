@@ -183,7 +183,7 @@ private final class ChannelPreview: UIView {
     func show(_ service: Service?) {
         shownReference = service?.servicereference
         logo.setPicon(for: service)
-        name.text = service?.displayName
+        name.text = service.map { $0.displayName ?? L("Unnamed channel") }
         now.text = nil
         guard let service = service, let reference = service.servicereference else { return }
         STBAPI.common()?.getEPG(for: service, from: 0, to: 0) { [weak self] events, _ in

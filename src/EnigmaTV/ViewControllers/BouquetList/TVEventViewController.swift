@@ -292,7 +292,8 @@ final class EPGSearchResultsViewController: UITableViewController, UISearchResul
         } else if query.count >= 2 {
             emptyLabel.text = L("No upcoming programmes match “%@”.", query)
         } else {
-            emptyLabel.text = L("Search the TV guide of all channels by programme title.")
+            // tvOS lays the results out only once there is a query – a hint here would sit off-centre.
+            emptyLabel.text = nil
         }
     }
 

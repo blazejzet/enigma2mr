@@ -202,7 +202,7 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
 
     private enum Row {
         case power, sleepTimer, restartGUI, reboot
-        case timeshift, timeshiftBuffer, zap, transcoding
+        case timeshift, timeshiftBuffer, zap, transcoding, logoCountry
         case config(String)
         case allSettings, address, credentials
         case receiver(ReceiverProfile), addReceiver
@@ -397,7 +397,7 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
             Section(title: L("Receivers"), footer: receivers.count > 2 ? L("Switch between the receivers in your home. Each keeps its own last channel.") : nil,
                     rows: receivers),
             Section(title: L("Receiver"), footer: nil, rows: [.power, .sleepTimer, .restartGUI, .reboot]),
-            Section(title: L("Watching on Apple TV"), footer: nil, rows: [.timeshift, .timeshiftBuffer, .zap, .transcoding]),
+            Section(title: L("Watching on Apple TV"), footer: nil, rows: [.timeshift, .timeshiftBuffer, .zap, .transcoding, .logoCountry]),
         ]
         for group in ReceiverSettingsViewController.curated {
             let rows = group.paths.filter { items[$0] != nil }.map { Row.config($0) }
@@ -475,6 +475,9 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
         case .credentials:
             let user = api?.username ?? ""
             return (L("User name & password"), user.isEmpty ? L("None") : user, false)
+        case .logoCountry:
+            let region = ChannelLogoProvider.countries.first { $0.folder == ChannelLogoProvider.chosenCountry }?.region
+            return (L("Channel logos"), region.flatMap { Locale.current.localizedString(forRegionCode: $0) } ?? L("Automatic"), true)
         case .receiver(let profile):
             return (profile.name, profile.id == ReceiverStore.active?.id ? L("%@ · Connected", profile.address) : profile.address, false)
         case .addReceiver:
@@ -545,6 +548,14 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
             }
         case .credentials:
             editCredentials()
+        case .logoCountry:
+            let countries = ChannelLogoProvider.countries
+                .map { ($0.folder, Locale.current.localizedString(forRegionCode: $0.region) ?? $0.folder) }
+                .sorted { $0.1 < $1.1 }
+            pushChoices(L("Channel logos"), [("", L("Automatic"))] + countries, selected: ChannelLogoProvider.chosenCountry ?? "") { [weak self] value in
+                ChannelLogoProvider.chosenCountry = value.isEmpty ? nil : value
+                self?.table.reloadData()
+            }
         case .receiver(let profile):
             receiverActions(profile)
         case .addReceiver:

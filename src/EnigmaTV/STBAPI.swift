@@ -1226,8 +1226,27 @@ final class ChannelLogoProvider {
     private var waiting = [() -> Void]()
     private var loading = false
 
-    /// Country folder from the Apple TV's region, plus the international folder.
+    /// Countries offered in Settings → Channel logos: (tv-logos folder, region code for the name).
+    static let countries: [(folder: String, region: String)] = [
+        ("austria", "AT"), ("belgium", "BE"), ("croatia", "HR"), ("czech-republic", "CZ"), ("france", "FR"),
+        ("germany", "DE"), ("greece", "GR"), ("hungary", "HU"), ("italy", "IT"), ("netherlands", "NL"),
+        ("nordic", "SE"), ("poland", "PL"), ("portugal", "PT"), ("romania", "RO"), ("slovakia", "SK"),
+        ("spain", "ES"), ("switzerland", "CH"), ("turkey", "TR"), ("ukraine", "UA"), ("united-kingdom", "GB"),
+        ("united-states", "US"),
+    ]
+
+    /// Folder chosen in Settings (nil = from the Apple TV's region).
+    static var chosenCountry: String? {
+        get { return UserDefaults.standard.string(forKey: "logoCountry").flatMap { $0.isEmpty ? nil : $0 } }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "logoCountry")
+            shared.index = nil   // reload with the new country
+        }
+    }
+
+    /// Country folder (chosen, else from the Apple TV's region), plus the international folder.
     private var folders: [String] {
+        if let chosen = ChannelLogoProvider.chosenCountry { return ["international", chosen] }
         let region = Locale.current.regionCode?.uppercased() ?? ""
         let special = ["CZ": "czech-republic", "GB": "united-kingdom", "US": "united-states", "AE": "united-arab-emirates",
                        "HK": "hong-kong", "NZ": "new-zealand", "ZA": "south-africa", "CR": "costa-rica",

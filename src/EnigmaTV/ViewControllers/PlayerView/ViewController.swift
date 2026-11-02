@@ -505,21 +505,25 @@ class ViewController: UIViewController {
                   ReceiverStore.all.contains(where: { $0.address == session.receiverAddress }) else { return }
             if let mine = RoomSync.mine, mine.sref == session.sref, mine.receiverAddress == session.receiverAddress { return }
             self.answeredSession = session.updated
-            let what = session.kind == "recording"
-                ? "\(session.title)\(session.position.map { " · \(Int($0 * 100))%" } ?? "")"
-                : [session.title, session.programme].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
-            // On top of whatever is shown – at launch the TV guide opens a moment earlier.
-            var top: UIViewController = self
-            while let presented = top.presentedViewController { top = presented }
-            guard !(top is UIAlertController) else { return }
-            let alert = UIAlertController(title: L("Continue from %@?", session.room), message: what, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: L("Continue"), style: .default) { _ in
-                self.dismissAllVC()
-                self.continueSession(session)
-            })
-            alert.addAction(UIAlertAction(title: L("Not now"), style: .cancel))
-            top.present(alert, animated: true)
+            self.presentContinueAlert(for: session)
         }
+    }
+
+    private func presentContinueAlert(for session: WatchSession) {
+        let what = session.kind == "recording"
+            ? "\(session.title)\(session.position.map { " · \(Int($0 * 100))%" } ?? "")"
+            : [session.title, session.programme].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        // On top of whatever is shown – at launch the TV guide opens a moment earlier.
+        var top: UIViewController = self
+        while let presented = top.presentedViewController { top = presented }
+        guard !(top is UIAlertController) else { return }
+        let alert = UIAlertController(title: L("Continue from %@?", session.room), message: what, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: L("Continue"), style: .default) { _ in
+            self.dismissAllVC()
+            self.continueSession(session)
+        })
+        alert.addAction(UIAlertAction(title: L("Not now"), style: .cancel))
+        top.present(alert, animated: true)
     }
 
     /// Plays here what another Apple TV plays (or played): same receiver, channel / recording and position.
@@ -986,10 +990,15 @@ extension ViewController {
         step(4, "close switch") { self.presentedViewController?.dismiss(animated: true) }
         step(3, "audio") { self.performSegue(withIdentifier: "chooser", sender: nil) }
         step(5, "close audio") { self.presentedViewController?.dismiss(animated: true) }
-        // Recordings & settings
+        // 2.0: record menu (hold select) – only shown, nothing is scheduled
+        step(3, "record menu") { self.showRecordMenu() }
+        step(5, "close record menu") { self.presentedViewController?.dismiss(animated: true) }
+        // Recordings, search, rooms & settings
         step(3, "menu") { self.tapMenu(self) }
         step(2, "recordings") { select(Movies2ViewController.self) }
-        step(5, "settings") { select(ReceiverSettingsViewController.self) }
+        step(5, "search") { select(UISearchContainerViewController.self) }
+        step(5, "rooms") { select(RoomsViewController.self) }
+        step(6, "settings") { select(ReceiverSettingsViewController.self) }
         step(6, "all settings") {
             let navigation = tabs?.selectedViewController as? UINavigationController
             navigation?.pushViewController(ConfigSectionsViewController(), animated: true)
@@ -1060,6 +1069,8 @@ extension ViewController {
                 }
             case "rooms": tab(RoomsViewController.self)
             case "record": self.showRecordMenu()
+            case "continue":
+                if let session = RoomSync.others.first { self.presentContinueAlert(for: session) }
             case "search":
                 tab(UISearchContainerViewController.self)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 3) {

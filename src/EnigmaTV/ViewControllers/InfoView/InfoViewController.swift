@@ -224,15 +224,15 @@ class InfoViewController: UIViewController {
             if let event = event, let begin = event.begin_timestamp {
                 let end = EpgEvent()
                 end.begin_timestamp = begin + (event.duration_sec ?? 0)
-                self.timesLabel.text = "\(event.getBeginTimeString()) – \(end.getBeginTimeString()) · \(event.durationMinutes) min"
+                self.timesLabel.text = "\(event.getBeginTimeString()) – \(end.getBeginTimeString()) · " + L("%d min", event.durationMinutes)
             } else if let recording = recording {
-                self.timesLabel.text = recording.length.map { "\($0) min" }
+                self.timesLabel.text = recording.length.map { L("%@ min", $0) }
             } else {
                 self.timesLabel.text = nil
             }
 
             if let next = edp.getNextEvent(), let title = next.title {
-                self.nextLabel.text = "Next   \(next.getBeginTimeString())  \(title)"
+                self.nextLabel.text = L("Next   %@  %@", next.getBeginTimeString(), title)
             } else {
                 self.nextLabel.text = nil
             }
@@ -277,7 +277,7 @@ class InfoViewController: UIViewController {
             let delay = real > current ? real - current : 0
             badge.isHidden = false
             if delay < 8 {
-                badge.text = "LIVE"
+                badge.text = L("LIVE")
                 badge.backgroundColor = UIColor.systemRed
             } else {
                 badge.text = "−" + InfoViewController.duration(delay)

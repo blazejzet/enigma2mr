@@ -38,14 +38,13 @@ class MovieCollectionViewCell: CommonCollectionViewCell {
         //let tins = UInt64(serv.recordingtime!)
         self.requestImage(name:serv.eventname ?? "",tinm:serv.lengthSeconds / 60,servicename:serv.servicename ?? "")
         //self.timeLabel.text = serv.length
-        self.recIcon.text = "⚪️"
+        self.recIcon.text = ""   // the progress bar shows how far it was watched
         self.recordingLabel.text = serv.eventname ?? ""
         //self.delaccv.frame = CGRect(x: self.frame.size.width, y: 0, width: 0, height: self.frame.size.height)
         //self.backgroundColor = UIColor.clear
         
         if let ck = ck{
-            self.recIcon.text = "🔵"
-            self.recordingLabel.text = "   \(serv.eventname ?? "")"
+            self.recordingLabel.text = serv.eventname ?? ""
             let watched = (ck["watched"] as? NSNumber)?.intValue ?? 0
             let s = CGFloat(watched) / 100.0
             //progress.setMultiplier(multiplier: s)

@@ -34,6 +34,12 @@ class EpgEvent:NSObject ,Translateable{
         return dateFormatter
     }()
 
+    /// false for the placeholder OpenWebif returns when the receiver has no EPG ("N/A", no times).
+    var hasData: Bool {
+        guard let title = title?.trimmingCharacters(in: .whitespaces), !title.isEmpty, title != "N/A" else { return false }
+        return (begin_timestamp ?? 0) > 0
+    }
+
     func getBeginTimeString()->String{
         guard let ts = self.begin_timestamp else {return "?"}
         return EpgEvent.timeFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(ts)))

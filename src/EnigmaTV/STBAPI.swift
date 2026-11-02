@@ -149,6 +149,7 @@ class STBAPI: NSObject {
         self.useTranscoding=false;
         super.init()
         self.loadSettings()
+        ReceiverStore.syncActiveFromDefaults()
     }
 
     func set(address:String){
@@ -335,6 +336,38 @@ class STBAPI: NSObject {
         return webURL(path: "/picon/\(name).png")
     }
 
+    /// Picon by channel name ("SNP" packs: `TVP ABC 2` → `tvpabc2.png`, `Canal+` → `canalplus.png`).
+    func piconByNameURL(for service: Service) -> URL? {
+        guard let name = service.displayName else { return nil }
+        var snp = name.lowercased()
+            .replacingOccurrences(of: "&", with: "and")
+            .replacingOccurrences(of: "+", with: "plus")
+            .replacingOccurrences(of: "*", with: "star")
+        snp = snp.folding(options: .diacriticInsensitive, locale: nil)
+        snp = String(snp.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) && $0.isASCII }.map(Character.init))
+        guard !snp.isEmpty else { return nil }
+        return webURL(path: "/picon/\(snp).png")
+    }
+
+    /// `/api/statusinfo` of any saved receiver (not only the active one): power, channel, recording, streams.
+    static func status(of profile: ReceiverProfile, cb: @escaping ([String: Any]?) -> Void) {
+        var c = URLComponents()
+        c.scheme = profile.prot
+        c.host = profile.address
+        if let port = Int(profile.webPort), port != (profile.prot == "https" ? 443 : 80) { c.port = port }
+        c.path = "/api/statusinfo"
+        guard profile.apitype == "api", let url = c.url else { return DispatchQueue.main.async { cb(nil) } }
+        var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 5)
+        if !profile.username.isEmpty {
+            let login = "\(profile.username):\(profile.password)"
+            request.setValue("Basic \(Data(login.utf8).base64EncodedString())", forHTTPHeaderField: "Authorization")
+        }
+        URLSession.shared.dataTask(with: request) { data, _, _ in
+            let json = data.flatMap { (try? JSONSerialization.jsonObject(with: $0)) as? [String: Any] }
+            DispatchQueue.main.async { cb(json) }
+        }.resume()
+    }
+
     // MARK: - Transport
 
     private func request(_ url: URL) -> URLRequest {
@@ -403,7 +436,7 @@ class STBAPI: NSObject {
     func discoverNetwork(status:@escaping ((Int)->Void),success:@escaping ((TunerInfo,String)->Void),failure:@escaping ((String)->Void), finished: (() -> Void)? = nil){
         let addresses = NetworkHelper.getNetworkIPAddresses()
         if addresses.isEmpty {
-            DispatchQueue.main.async { failure("No network found. Please restart Your device.") }
+            DispatchQueue.main.async { failure(L("No network found. Please restart Your device.")) }
             return
         }
 
@@ -440,7 +473,7 @@ class STBAPI: NSObject {
             group.notify(queue: .main) {
                 scanSession.finishTasksAndInvalidate()
                 if found == 0 {
-                    failure("No receiver found.")
+                    failure(L("No receiver found."))
                 }
                 finished?()
             }
@@ -549,6 +582,21 @@ class STBAPI: NSObject {
             case .failure:
                 cb([])
             }
+        }
+    }
+
+    /// Programmes on all channels whose title contains `text` (`epgsearch`), oldest first.
+    func searchEPG(_ text: String, cb: @escaping ([EpgEvent]) -> Void) {
+        fetchEvents("epgsearch", [("search", text)]) { events in
+            cb(events.sorted { ($0.begin_timestamp ?? 0) < ($1.begin_timestamp ?? 0) })
+        }
+    }
+
+    /// Other broadcasts of the same programme (`epgsimilar`), e.g. repeats and further episodes.
+    func similarEPG(to event: EpgEvent, cb: @escaping ([EpgEvent]) -> Void) {
+        guard let sref = event.sref, let id = event.id else { return cb([]) }
+        fetchEvents("epgsimilar", [("sRef", sref), ("eventid", String(id))]) { events in
+            cb(events.sorted { ($0.begin_timestamp ?? 0) < ($1.begin_timestamp ?? 0) })
         }
     }
 
@@ -710,6 +758,26 @@ class STBAPI: NSObject {
         }
     }
 
+    /// Records `sref` from `begin` to `end` (unix times) – "record now" for a fixed time.
+    func addTimer(sref: String, begin: UInt64, end: UInt64, name: String, cb: @escaping (Bool, String?) -> Void) {
+        fetch(Message.self, "timeradd", [("sRef", sref), ("begin", String(begin)), ("end", String(end)), ("name", name)]) { result in
+            switch result {
+            case .success(let message):
+                cb(message.result ?? false, message.message)
+                self.getTimers { _ in }
+            case .failure(let error):
+                cb(false, "\(error)")
+            }
+        }
+    }
+
+    /// The timer currently recording `sref`, if any (enigma2 timer state 2 = running).
+    func runningRecording(sref: String, cb: @escaping (RecordingTimer?) -> Void) {
+        getTimers { list in
+            cb(list.timers?.first { $0.state == 2 && $0.serviceref == sref })
+        }
+    }
+
     func movieDelete(_ m:Movie, cb: ((Bool, String?) -> Void)? = nil){
         guard let sref = m.serviceref else {
             cb?(false, nil)
@@ -830,7 +898,7 @@ class STBAPI: NSObject {
     /// on a clean shutdown/standby cycle – a power cut right after a change can lose it.
     func saveConfig(path: String, value: String, cb: @escaping (Bool, String?) -> Void) {
         guard apitype == "api", let url = apiURL("saveconfig") else {
-            DispatchQueue.main.async { cb(false, "Requires the OpenWebif JSON API") }
+            DispatchQueue.main.async { cb(false, L("Requires the OpenWebif JSON API")) }
             return
         }
         var req = request(url)
@@ -1029,7 +1097,7 @@ final class ReceiverConfigItem {
     /// Human readable current value.
     var currentLabel: String {
         switch kind {
-        case .checkbox: return isOn ? "On" : "Off"
+        case .checkbox: return isOn ? L("On") : L("Off")
         case .select: return choices.first(where: { $0.value == current })?.label ?? current.htmlUnescaped
         default: return current.htmlUnescaped
         }
@@ -1070,22 +1138,25 @@ extension UIImageView {
         }
         let request = UUID().uuidString
         logoRequest = request
-        let name = service.servicename ?? ""
-
-        let show: (UIImage?) -> Void = { [weak self] image in
+        UIImageView.loadChannelLogo(for: service) { [weak self] image in
             guard let self = self, self.logoRequest == request else { return }
             let bounds = self.bounds.size
             let aspect = bounds.height > 0 ? bounds.width / bounds.height : 0
             self.image = image.map { UIImageView.padded($0, by: padding, toAspect: aspect) }
         }
+    }
+
+    /// The logo chain of `setPicon` without a view (e.g. for Now Playing artwork). Completion on main.
+    static func loadChannelLogo(for service: Service, completion: @escaping (UIImage?) -> Void) {
+        let name = service.servicename ?? ""
         let load: (URL, [SDWebImageContextOption: Any]?, @escaping () -> Void) -> Void = { url, context, failed in
             SDWebImageManager.shared.loadImage(with: url, options: [], context: context, progress: nil) { image, _, _, _, _, _ in
                 DispatchQueue.main.async {
-                    if let image = image { show(image) } else { failed() }
+                    if let image = image { completion(image) } else { failed() }
                 }
             }
         }
-        let showName = { show(ChannelLogoProvider.nameImage(for: name)) }
+        let showName = { completion(ChannelLogoProvider.nameImage(for: name)) }
         let tryCommunityLogo = {
             ChannelLogoProvider.shared.url(for: name) { url in
                 guard let url = url else { return showName() }
@@ -1097,6 +1168,11 @@ extension UIImageView {
             return tryCommunityLogo()
         }
         var context = [SDWebImageContextOption: Any]()
+        // Receiver picon by reference, then by name, then the community logos.
+        let tryNamePicon = {
+            guard let byName = api.piconByNameURL(for: service) else { return tryCommunityLogo() }
+            load(byName, context, tryCommunityLogo)
+        }
         if let auth = api.authorizationHeader {
             // Only for the receiver – never send its credentials to other hosts.
             context[.downloadRequestModifier] = SDWebImageDownloaderRequestModifier { request in
@@ -1105,7 +1181,7 @@ extension UIImageView {
                 return r
             }
         }
-        load(url, context, tryCommunityLogo)
+        load(url, context, tryNamePicon)
     }
 
     /// Stops a pending `setPicon` so a late logo does not replace an image set meanwhile.
@@ -1281,5 +1357,143 @@ final class ChannelLogoProvider {
         }
         nameImages.setObject(image, forKey: text as NSString)
         return image
+    }
+}
+
+// MARK: - Saved receivers
+
+/// A receiver the user connected to.
+struct ReceiverProfile: Codable, Equatable {
+    var id: String
+    var name: String
+    var address: String
+    var webPort: String
+    var streamPort: String
+    var prot: String
+    var apitype: String
+    var username: String
+    var password: String
+}
+
+/// The receivers the user connected to ("multi room": living room box, bedroom box, ...).
+/// The active one is mirrored into the plain UserDefaults keys that STBAPI and the tvOS Settings bundle use,
+/// so switching = writing those keys + STBAPI.restart().
+enum ReceiverStore {
+    private static let listKey = "receivers"
+    private static let activeKey = "activeReceiver"
+    private static var uds: UserDefaults { return UserDefaults.standard }
+
+    static var all: [ReceiverProfile] {
+        get {
+            guard let data = uds.data(forKey: listKey) else { return [] }
+            return (try? JSONDecoder().decode([ReceiverProfile].self, from: data)) ?? []
+        }
+        set {
+            uds.set(try? JSONEncoder().encode(newValue), forKey: listKey)
+        }
+    }
+
+    static var activeID: String? { return uds.string(forKey: activeKey) }
+
+    static var active: ReceiverProfile? {
+        let list = all
+        return list.first { $0.id == activeID } ?? list.first { $0.address == currentAddress }
+    }
+
+    private static var currentAddress: String? {
+        guard let address = uds.string(forKey: "stbAddress")?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !address.isEmpty, address != "0.0.0.0" else { return nil }
+        return address
+    }
+
+    /// The connection settings currently in the UserDefaults keys.
+    private static func fromDefaults(id: String, name: String, address: String) -> ReceiverProfile {
+        func value(_ key: String, _ fallback: String) -> String {
+            let v = uds.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return v.isEmpty ? fallback : v
+        }
+        return ReceiverProfile(id: id, name: name, address: address,
+                               webPort: value("stbPort2", "80"), streamPort: value("stbPort", "8001"),
+                               prot: value("stbProt", "http").lowercased(), apitype: uds.bool(forKey: "oldapi") ? "web" : "api",
+                               username: uds.string(forKey: "username") ?? "", password: uds.string(forKey: "password") ?? "")
+    }
+
+    /// Keeps the list in step with the UserDefaults keys: creates the first entry for a receiver configured by
+    /// an older version, and takes over edits made in the Settings tab or the tvOS Settings app.
+    static func syncActiveFromDefaults() {
+        guard let address = currentAddress else { return }
+        var list = all
+        if let index = list.firstIndex(where: { $0.id == activeID }), list[index].address == address {
+            list[index] = fromDefaults(id: list[index].id, name: list[index].name, address: address)
+        } else if let index = list.firstIndex(where: { $0.address == address }) {
+            // Address switched to another saved receiver (e.g. typed in the Settings app).
+            list[index] = fromDefaults(id: list[index].id, name: list[index].name, address: address)
+            uds.set(list[index].id, forKey: activeKey)
+        } else if let index = list.firstIndex(where: { $0.id == activeID }) {
+            // The active receiver's address was edited.
+            list[index] = fromDefaults(id: list[index].id, name: list[index].name, address: address)
+        } else {
+            let profile = fromDefaults(id: UUID().uuidString, name: address, address: address)
+            list.append(profile)
+            uds.set(profile.id, forKey: activeKey)
+        }
+        if list != all { all = list }
+    }
+
+    /// Adds a receiver found by discovery (or refreshes its name) and returns it. Not activated.
+    @discardableResult
+    static func add(name: String, address: String, apitype: String) -> ReceiverProfile {
+        var list = all
+        if let index = list.firstIndex(where: { $0.address == address }) {
+            // Keep a name the user chose; replace one that was just the address.
+            if list[index].name == address, !name.isEmpty { list[index].name = name }
+            list[index].apitype = apitype
+            all = list
+            return list[index]
+        }
+        let profile = ReceiverProfile(id: UUID().uuidString, name: name.isEmpty ? address : name, address: address,
+                                      webPort: "80", streamPort: "8001", prot: "http", apitype: apitype,
+                                      username: "", password: "")
+        list.append(profile)
+        all = list
+        return profile
+    }
+
+    /// Makes `profile` the receiver the app talks to. Callers restart the player afterwards.
+    static func activate(_ profile: ReceiverProfile) {
+        let previous = active?.id
+        if previous != profile.id {
+            // Each receiver has its own channel list – remember the last channel per receiver.
+            for key in ["lastService", "lastBouquet"] {
+                if let previous = previous { uds.set(uds.string(forKey: key), forKey: "\(key).\(previous)") }
+                uds.set(uds.string(forKey: "\(key).\(profile.id)"), forKey: key)
+            }
+        }
+        uds.set(profile.address, forKey: "stbAddress")
+        uds.set(profile.webPort, forKey: "stbPort2")
+        uds.set(profile.streamPort, forKey: "stbPort")
+        uds.set(profile.prot, forKey: "stbProt")
+        uds.set(profile.apitype == "web", forKey: "oldapi")
+        uds.set(profile.username, forKey: "username")
+        uds.set(profile.password, forKey: "password")
+        uds.set(profile.id, forKey: activeKey)
+        STBAPI.restart()
+    }
+
+    static func rename(_ profile: ReceiverProfile, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        all = all.map { $0.id == profile.id ? { var p = $0; p.name = trimmed; return p }($0) : $0 }
+    }
+
+    /// Names the active receiver after its model once known, unless the user named it.
+    static func adoptName(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let profile = active, profile.name == profile.address else { return }
+        rename(profile, to: trimmed)
+    }
+
+    static func remove(_ profile: ReceiverProfile) {
+        all = all.filter { $0.id != profile.id }
     }
 }

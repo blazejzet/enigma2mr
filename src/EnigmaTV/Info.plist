@@ -32,7 +32,7 @@
 		<true/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>EnigmaTV connects to your Enigma2 receiver on the local network to show channels, the TV guide and recordings and to stream live TV.</string>
+	<string>Enigma2MR connects to your Enigma2 receiver on the local network to show channels, the TV guide and recordings and to play them on this Apple TV.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

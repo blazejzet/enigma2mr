@@ -21,6 +21,8 @@ extension UIViewController{
 
 class ViewController: UIViewController {
     var sv:StreamView?
+    /// Control Center / Siri / iPhone remote integration.
+    private var nowPlaying: NowPlaying?
     
     @IBOutlet weak var finfo: UILabel!
     @IBOutlet weak var hudView: UIView!
@@ -159,6 +161,7 @@ class ViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(ViewController.bouquetPrepared(notification:)), name: NSNotification.Name(rawValue: "bouquetPrepared"), object: nil);
                   
         NotificationCenter.default.addObserver(self, selector: #selector(ViewController.watch_alternative(_:)), name: NSNotification.Name(rawValue: "setMainPlayer"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(ViewController.roomContinue(_:)), name: NSNotification.Name(rawValue: "roomContinue"), object: nil)
        
         
         
@@ -166,6 +169,16 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         sv = StreamView();
         self.tvView.addSubview(sv!);
+        // The storyboard spinner used to spin forever and showed through every overlay (discovery, track
+        // chooser, channel switcher) – it now only runs while a stream is opening.
+        let spinner = view.subviews.compactMap { $0 as? UIActivityIndicatorView }.first
+        spinner?.hidesWhenStopped = true
+        spinner?.stopAnimating()
+        if let sv = sv { nowPlaying = NowPlaying(streamView: sv) }
+        setUpRecording()
+        sv?.onLoading = { [weak spinner] loading in
+            if loading { spinner?.startAnimating() } else { spinner?.stopAnimating() }
+        }
         sv?.onTimeshiftStatus = { [weak self] text in
             guard let self = self else { return }
             NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(ViewController.rfinfo), object: nil)
@@ -240,10 +253,13 @@ class ViewController: UIViewController {
     
     func restartPlayer(){
         let generation = playbackGeneration
+        let lastHere = RoomSync.mine?.updated ?? 0
         STBAPI.common()?.test(success:{ tunerinfo in
             // A channel/recording chosen meanwhile (or stop()) wins over this restart.
             guard generation == self.playbackGeneration else { return }
+            ReceiverStore.adoptName([tunerinfo.brand, tunerinfo.model].compactMap { $0 }.joined(separator: " "))
             self.start()
+            self.offerContinueFromOtherRoom(since: lastHere)
             #if DEBUG
             if self.runAutomatedTestIfRequested() || self.showScreenIfRequested() || self.runDemoIfRequested() { return }
             #endif
@@ -269,10 +285,10 @@ class ViewController: UIViewController {
     /// tvOS blocks local network access for this app – nothing on the LAN can be reached.
     private func showLocalNetworkDenied() {
         guard presentedViewController == nil else { return }
-        let alert = UIAlertController(title: "Allow Local Network access",
-                                      message: "EnigmaTV needs access to your local network to reach the receiver. Turn it on in Settings → Privacy & Security → Local Network → EnigmaTV.",
+        let alert = UIAlertController(title: L("Allow Local Network access"),
+                                      message: L("This app needs access to your local network to reach the receiver. Turn it on in Settings → Privacy & Security → Local Network."),
                                       preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Try again", style: .default) { _ in self.restartPlayer() })
+        alert.addAction(UIAlertAction(title: L("Try again"), style: .default) { _ in self.restartPlayer() })
         present(alert, animated: true)
     }
 
@@ -280,15 +296,15 @@ class ViewController: UIViewController {
     /// and keep checking in the background – a short network hiccup resolves itself.
     private func showReceiverUnreachable(address: String) {
         guard presentedViewController == nil else { return }
-        let alert = UIAlertController(title: "Receiver not reachable",
-                                      message: "\(address) does not answer. Check that it is switched on and connected to the network.",
+        let alert = UIAlertController(title: L("Receiver not reachable"),
+                                      message: L("%@ does not answer. Check that it is switched on and connected to the network.", address),
                                       preferredStyle: .alert)
         var retry: Timer?
-        alert.addAction(UIAlertAction(title: "Try again", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: L("Try again"), style: .default) { _ in
             retry?.invalidate()
             self.restartPlayer()
         })
-        alert.addAction(UIAlertAction(title: "Search for receivers", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: L("Search for receivers"), style: .default) { _ in
             retry?.invalidate()
             self.performSegue(withIdentifier: "showsettings", sender: self)
         })
@@ -343,6 +359,7 @@ class ViewController: UIViewController {
             stoppedMovie = (movie, sv?.changeToPosition ?? sv?.mp?.position ?? 0)
         }
         saveMoviePosition()
+        nowPlaying?.stop()
         sv?.stop()
         
     }
@@ -360,6 +377,7 @@ class ViewController: UIViewController {
 
     /// Foreground entry: continue the recording that was playing, otherwise the last channel.
     @objc func resume(){
+        offerContinueFromOtherRoom(since: RoomSync.mine?.updated ?? 0)
         if let stopped = stoppedMovie {
             guard UIApplication.shared.applicationState != .background else { return }
             watchMovie(stopped.movie)
@@ -377,6 +395,164 @@ class ViewController: UIViewController {
     }
 
     var  privateCloudDatabase:CKDatabase?
+
+    // MARK: Recording the live channel
+
+    private let recLabel = UILabel()
+    private var recTimer: Timer?
+    private var suppressNextPlayPause = false
+
+    private func setUpRecording() {
+        // Hold select: record menu for the channel on screen.
+        let hold = UILongPressGestureRecognizer(target: self, action: #selector(selectHeld(_:)))
+        hold.allowedPressTypes = [NSNumber(value: UIPressType.select.rawValue)]
+        hold.minimumPressDuration = 0.8
+        view.addGestureRecognizer(hold)
+
+        recLabel.text = "● REC"
+        recLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        recLabel.textColor = .white
+        recLabel.backgroundColor = UIColor(red: 0.85, green: 0.1, blue: 0.1, alpha: 0.9)
+        recLabel.textAlignment = .center
+        recLabel.layer.cornerRadius = 12
+        recLabel.layer.masksToBounds = true
+        recLabel.isHidden = true
+        recLabel.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(recLabel)
+        NSLayoutConstraint.activate([
+            recLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
+            recLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -80),
+            recLabel.widthAnchor.constraint(equalToConstant: 150),
+            recLabel.heightAnchor.constraint(equalToConstant: 52),
+        ])
+        recTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in self?.updateRecordingIndicator() }
+    }
+
+    /// "● REC" while the receiver records the channel on screen.
+    func updateRecordingIndicator() {
+        guard let sref = (watching as? Service)?.servicereference, let api = STBAPI.common() else {
+            recLabel.isHidden = true
+            return
+        }
+        api.runningRecording(sref: sref) { [weak self] timer in
+            guard (self?.watching as? Service)?.servicereference == sref else { return }
+            self?.recLabel.isHidden = timer == nil
+        }
+    }
+
+    @objc private func selectHeld(_ recognizer: UILongPressGestureRecognizer) {
+        guard recognizer.state == .began, presentedViewController == nil else { return }
+        suppressNextPlayPause = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.suppressNextPlayPause = false }
+        showRecordMenu()
+    }
+
+    func showRecordMenu() {
+        guard let service = watching as? Service, let sref = service.servicereference, let api = STBAPI.common() else { return }
+        let channel = service.displayName ?? ""
+        api.runningRecording(sref: sref) { [weak self] running in
+            guard let self = self, self.presentedViewController == nil else { return }
+            let sheet = UIAlertController(title: running == nil ? L("Record %@", channel) : L("%@ is recording", channel),
+                                          message: running?.name, preferredStyle: .actionSheet)
+            let done: (Bool, String?) -> Void = { ok, message in
+                self.updateRecordingIndicator()
+                guard !ok else { return }
+                let alert = UIAlertController(title: L("Recording not changed"), message: message, preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                self.present(alert, animated: true)
+            }
+            if let running = running {
+                sheet.addAction(UIAlertAction(title: L("Stop recording"), style: .destructive) { _ in
+                    api.timerDelete(running) { ok, message in done(ok, message) }
+                })
+            } else {
+                if let event = self.nowPlaying?.currentProgramme, let id = event.id, let title = event.title {
+                    sheet.addAction(UIAlertAction(title: L("Record “%@”", title), style: .default) { _ in
+                        api.setTimer(sref: event.sref ?? sref, eid: id) { ok, message in done(ok, message) }
+                    })
+                }
+                let now = UInt64(Date().timeIntervalSince1970)
+                for (minutes, label) in [(30, L("Record 30 minutes")), (60, L("Record 1 hour")), (120, L("Record 2 hours"))] {
+                    sheet.addAction(UIAlertAction(title: label, style: .default) { _ in
+                        api.addTimer(sref: sref, begin: now, end: now + UInt64(minutes * 60), name: channel) { ok, message in done(ok, message) }
+                    })
+                }
+            }
+            sheet.addAction(UIAlertAction(title: L("Cancel"), style: .cancel))
+            self.present(sheet, animated: true)
+        }
+    }
+
+    // MARK: Multi room
+
+    /// Session the user already answered, so it is offered only once.
+    private var answeredSession: TimeInterval = 0
+
+    /// Another Apple TV was watching something after this one last did (e.g. the user moved from the living
+    /// room to the bedroom) – offer to continue it here.
+    private func offerContinueFromOtherRoom(since lastHere: TimeInterval) {
+        RoomSync.start()
+        #if DEBUG
+        let defaults = UserDefaults.standard
+        if defaults.string(forKey: "EnigmaScreen") != nil || defaults.string(forKey: "EnigmaTest") != nil || defaults.bool(forKey: "EnigmaDemo") { return }
+        #endif
+        // Give iCloud a moment to deliver the other devices' latest state.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+            guard let self = self, self.presentedViewController == nil,
+                  UIApplication.shared.applicationState == .active,
+                  let session = RoomSync.others.first,
+                  session.updated > lastHere, session.updated != self.answeredSession,
+                  Date().timeIntervalSince1970 - session.updated < 30 * 60,
+                  ReceiverStore.all.contains(where: { $0.address == session.receiverAddress }) else { return }
+            if let mine = RoomSync.mine, mine.sref == session.sref, mine.receiverAddress == session.receiverAddress { return }
+            self.answeredSession = session.updated
+            let what = session.kind == "recording"
+                ? "\(session.title)\(session.position.map { " · \(Int($0 * 100))%" } ?? "")"
+                : [session.title, session.programme].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+            let alert = UIAlertController(title: L("Continue from %@?", session.room), message: what, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: L("Continue"), style: .default) { _ in self.continueSession(session) })
+            alert.addAction(UIAlertAction(title: L("Not now"), style: .cancel))
+            self.present(alert, animated: true)
+        }
+    }
+
+    /// Plays here what another Apple TV plays (or played): same receiver, channel / recording and position.
+    func continueSession(_ session: WatchSession) {
+        if let profile = ReceiverStore.all.first(where: { $0.address == session.receiverAddress }),
+           profile.id != ReceiverStore.active?.id {
+            ReceiverStore.activate(profile)
+        }
+        if session.kind == "recording" {
+            STBAPI.common()?.getMovies { [weak self] list in
+                guard let self = self,
+                      let movie = list.movies?.compactMap({ $0 }).first(where: { $0.serviceref == session.sref }) else { return }
+                self.watchMovie(movie)
+                if let position = session.position, position > 0, position < 0.99 {
+                    self.sv?.changeToPosition = Float(position)
+                }
+            }
+        } else {
+            let play: (Service?, Service?) -> Void = { [weak self] service, bouquet in
+                guard let service = service, let bouquet = bouquet else { return }
+                self?.watch(service, inBouquet: bouquet)
+            }
+            if let bref = session.bref {
+                DataProvider.def().getBouquet(bref: bref) { bouquet in
+                    DataProvider.def().getService(bref: bref, sref: session.sref) { service in
+                        if service != nil { play(service, bouquet) } else { DataProvider.def().findService(sref: session.sref, cb: play) }
+                    }
+                }
+            } else {
+                DataProvider.def().findService(sref: session.sref, cb: play)
+            }
+        }
+    }
+
+    @objc func roomContinue(_ notification: Notification) {
+        guard let session = notification.object as? WatchSessionBox else { return }
+        dismissAllVC()
+        continueSession(session.session)
+    }
 
     /// Stores how far the current recording was watched ("continue watching").
     private func saveMoviePosition(){
@@ -512,15 +688,19 @@ class ViewController: UIViewController {
         self.watching = service
         // Channel lists for up/down switching come from DataProvider (ChannelSwipeViewController).
         sv?.play(service, inBouquet:bouquet)
+        nowPlaying?.watching(service, in: bouquet)
+        updateRecordingIndicator()
     }
         
     func watchMovie(_ movie:Movie){
         supersedePendingPlayback()
+        recLabel.isHidden = true
         self.watching = movie
         playingMovie = movie
         self.bouquet=nil
         sv?.changeToPosition = nil
         sv?.play(movie)
+        nowPlaying?.watching(movie)
         showInfo(for: movie)
     }
     func continueMovie(_ movie:Movie){
@@ -543,6 +723,7 @@ class ViewController: UIViewController {
                 self.bouquet = nil
                 self.playingMovie = movie
                 self.sv?.play(movie)
+                self.nowPlaying?.watching(movie)
                 // Applied by StreamView once VLC reports .playing (a seek before that is ignored).
                 self.sv?.changeToPosition = watched > 0 && watched < 100 ? Float(watched) / 100.0 : nil
                 self.showInfo(for: movie)
@@ -664,8 +845,14 @@ class ViewController: UIViewController {
     //PILOt
     
     @IBAction func playPausePressed(_ sender: Any) {
+        // The press that opened the record menu (long press on select) must not also pause.
+        if suppressNextPlayPause {
+            suppressNextPlayPause = false
+            return
+        }
         //if (sv?.timeshift)!{
             sv?.stTogglePause()
+            nowPlaying?.noteLocalToggle()
         //}else{
         //    sv?.switchToTimeshift()
             //sv?.stpause()
@@ -849,6 +1036,17 @@ extension ViewController {
                     gallery.cv.layoutIfNeeded()
                     gallery.cv.selectItem(at: first, animated: false, scrollPosition: [])
                     gallery.performSegue(withIdentifier: "showdetails", sender: gallery.cv.cellForItem(at: first))
+                }
+            case "rooms": tab(RoomsViewController.self)
+            case "record": self.showRecordMenu()
+            case "search":
+                tab(UISearchContainerViewController.self)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    let tabs = self.presentedViewController as? UITabBarController
+                    let container = (tabs?.selectedViewController as? UINavigationController)?.viewControllers.first as? UISearchContainerViewController
+                    guard let search = container?.searchController else { return }
+                    search.searchBar.text = UserDefaults.standard.string(forKey: "EnigmaSearch") ?? "wiadomości"
+                    search.searchResultsUpdater?.updateSearchResults(for: search)
                 }
             case "info": self.performSegue(withIdentifier: "info", sender: nil)
             case "swipe": self.performSegue(withIdentifier: "channelSwipeRight", sender: nil)

@@ -42,6 +42,6 @@ class TimerCollectionViewCell: CommonCollectionViewCell {
     override func getDate()->String?{return self.service?.realbegin};
     override func getTitle()->String?{return self.service?.name};
     override  func getService()->String?{return self.service?.servicename};
-    override func getLength()->String?{return "Planned"};
+    override func getLength()->String?{return L("Planned")};
     override func getSize()->String?{return ""};
 }

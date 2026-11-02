@@ -21,6 +21,34 @@ class NowCollectionViewCell: UICollectionViewCell {
     var bouquet:Service?
     var event: EpgEvent?
 
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        // The system focus effect only enlarges the image – invisible on logo tiles (padded logo on a coloured
+        // background), so the tiles looked dead. Lift the whole tile instead.
+        poster.adjustsImageWhenAncestorFocused = false
+        poster.layer.cornerRadius = 12
+        poster.layer.cornerCurve = .continuous
+        poster.clipsToBounds = true
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOffset = CGSize(width: 0, height: 18)
+        layer.shadowRadius = 24
+        layer.shadowOpacity = 0
+        clipsToBounds = false
+        applyFocus(false)
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations({ self.applyFocus(self.isFocused) }, completion: nil)
+    }
+
+    private func applyFocus(_ focused: Bool) {
+        transform = focused ? CGAffineTransform(scaleX: 1.08, y: 1.08) : .identity
+        layer.shadowOpacity = focused ? 0.6 : 0
+        layer.zPosition = focused ? 1 : 0
+        label.textColor = focused ? .white : UIColor(white: 1, alpha: 0.7)
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         event = nil
@@ -35,7 +63,7 @@ class NowCollectionViewCell: UICollectionViewCell {
         self.service = service
         self.bouquet = bouquet
         self.sref = service.servicereference ?? ""
-        self.label.text = service.servicename
+        self.label.text = service.displayName ?? ""
         progress.alpha = 0.0
         time.alpha = 0.0
         duration.alpha = 0.0
@@ -55,15 +83,16 @@ class NowCollectionViewCell: UICollectionViewCell {
         self.service = service
         self.bouquet = bouquet
         self.sref = service.servicereference ?? e.sref ?? ""
-        self.label.text = e.title ?? service.servicename
+        // Without EPG OpenWebif sends "N/A" – show the channel name rather than that.
+        self.label.text = e.hasData ? e.title : service.displayName ?? ""
         poster.cancelPicon()   // a logo requested before the EPG arrived must not land on the artwork tile
         poster.image = UIImage(named: "poster_placeholder2")
 
         self.time.text = e.getBeginTimeString()
-        self.duration.text = "\(e.durationMinutes) min."
+        self.duration.text = L("%d min", e.durationMinutes)
         progress.progress = e.getProgress()
 
-        let hasEPG = !(e.title ?? "").isEmpty && e.title != "N/A" && e.begin_timestamp != nil
+        let hasEPG = e.hasData
         progress.alpha = hasEPG ? 1.0 : 0.0
         time.alpha = hasEPG ? 1.0 : 0.0
         duration.alpha = hasEPG ? 1.0 : 0.0

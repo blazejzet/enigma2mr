@@ -20,11 +20,15 @@ class SettingsViewController: UIViewController, UITableViewDelegate,UITableViewD
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        var x = tableView.dequeueReusableCell(withIdentifier: "tunercell")! as? TunerCell
-        x?.configure(serv: tuners[indexPath.row])
-        
-        
-        return x!
+        // Standard tvOS cell (same look as the Settings tab) instead of the storyboard row that recoloured itself.
+        let cell = tableView.dequeueReusableCell(withIdentifier: "receiver", for: indexPath)
+        let tuner = tuners[indexPath.row]
+        var content = UIListContentConfiguration.subtitleCell()
+        let name = [tuner.brand, tuner.model].compactMap { $0 }.joined(separator: " ")
+        content.text = name.isEmpty ? (tuner.ip ?? L("Receiver")) : name
+        content.secondaryText = [tuner.boxtype, tuner.ip].compactMap { $0 }.joined(separator: " · ")
+        cell.contentConfiguration = content
+        return cell
     }
     
     
@@ -42,10 +46,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate,UITableViewD
     @IBOutlet weak var whe: UIActivityIndicatorView!
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "receiver")
+        tableView.backgroundColor = .clear
+        tableView.rowHeight = 124   // two lines: name, image · address
+        // Opaque: the player (and its loading spinner) must not show through this screen.
+        view.backgroundColor = .black
+        centerButtons()
+        self.whe.hidesWhenStopped = true
         self.whe.startAnimating()
         STBAPI.common()?.discoverNetwork(status: { _ in }, success: { dat,address in
             print("Discovering successfull: \(address):")
-            self.info.text = "Receiver found."
+            self.info.text = L("Receiver found.")
             /*self.f=true
             //self.cbutton.setTitle("OK", for: UIControlState.focused)
             self.cbutton.setTitle("OK", for: .focused)
@@ -56,6 +67,7 @@ class SettingsViewController: UIViewController, UITableViewDelegate,UITableViewD
             */
             dat.ip = address;
             self.tuners.append(dat)
+            self.info.text = self.tuners.count == 1 ? L("Receiver found – select it to connect.") : L("%d receivers found – select one to connect.", self.tuners.count)
             self.tableView.reloadData()
             // Focus the found receiver – one click selects it.
             self.setNeedsFocusUpdate()
@@ -70,31 +82,44 @@ class SettingsViewController: UIViewController, UITableViewDelegate,UITableViewD
             #endif
             
         }, failure: { st in
-            self.info.text = "Failed finding a device..."
+            self.info.text = L("Failed finding a device...")
             self.reachability?.stopNotifier()
             self.reachability = try? Reachability()
             let reachability = self.reachability
             // The notifier is owned by this screen – capture it weakly or the two keep each other alive.
             reachability?.whenReachable = { [weak self] reachability in
                 DispatchQueue.main.async {
-                    self?.info.text = "No supported device in Your Network. Check  Your STB."
+                    self?.info.text = L("No supported receiver found in your network. Check that it is switched on.")
                 }
             }
             reachability?.whenUnreachable = { [weak self] reachability in
                 DispatchQueue.main.async {
-                    self?.info.text = "Network not found..."
+                    self?.info.text = L("Network not found...")
                 }
             }
             do
             {
                 try reachability?.startNotifier()
             }catch{
-                self.info.text = "General network error"
+                self.info.text = L("General network error")
             }
         }, finished: { [weak self] in
             self?.whe.stopAnimating()
             self?.whe.isHidden = true
         })
+    }
+
+    /// The storyboard places Cancel left and the other two buttons right – show them as one centred row.
+    private func centerButtons() {
+        let buttons = view.allSubviews.compactMap { $0 as? UIButton }.sorted { $0.frame.minX < $1.frame.minX }
+        guard buttons.count > 1, let y = buttons.first?.frame.minY else { return }
+        let spacing: CGFloat = 40
+        let total = buttons.reduce(0) { $0 + $1.frame.width } + spacing * CGFloat(buttons.count - 1)
+        var x = (view.bounds.width - total) / 2
+        for button in buttons {
+            button.frame.origin = CGPoint(x: x, y: y)
+            x += button.frame.width + spacing
+        }
     }
 
     /// Kept alive while the screen is shown (a local instance would stop notifying immediately).
@@ -137,21 +162,17 @@ class SettingsViewController: UIViewController, UITableViewDelegate,UITableViewD
     }
     */
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        var tc = tuners[indexPath.row]
-        STBAPI.common()?.set(address:tc.ip!)
-        if let apitype = tc.apitype{
-            STBAPI.common()?.set(api:tc.apitype!)
-        }else{
-            STBAPI.common()?.set(api:"api")
-        }
-        STBAPI.common()?.saveSettings()
-        
-        
+        let tc = tuners[indexPath.row]
+        guard let address = tc.ip else { return }
         let receiver = [tc.brand, tc.model].compactMap { $0 }.joined(separator: " ")
-        let alert = UIAlertController(title: "Connected to \(receiver.isEmpty ? tc.ip ?? "receiver" : receiver)",
-                                      message: "EnigmaTV will now load your channel lists and TV guide from \(tc.ip ?? "the receiver").",
+        // Saved next to the other receivers (Settings → Receivers) and made the active one.
+        let profile = ReceiverStore.add(name: receiver, address: address, apitype: tc.apitype ?? "api")
+        ReceiverStore.activate(profile)
+
+        let alert = UIAlertController(title: L("Connected to %@", receiver.isEmpty ? address : receiver),
+                                      message: L("The app will now load your channel lists and TV guide from %@.", address),
                                       preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Continue", style: .default){ a in
+        alert.addAction(UIAlertAction(title: L("Continue"), style: .default){ a in
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "tuner.setupready"), object: nil)
         })
         self.present(alert, animated: true, completion: {})
@@ -183,7 +204,8 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
         case power, sleepTimer, restartGUI, reboot
         case timeshift, timeshiftBuffer, zap, transcoding
         case config(String)
-        case allSettings, address, credentials, search
+        case allSettings, address, credentials
+        case receiver(ReceiverProfile), addReceiver
     }
 
     private struct Section {
@@ -194,11 +216,11 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
 
     /// Curated receiver settings: (section title, footer, config paths, OpenWebif sections to load).
     private static let curated: [(title: String, footer: String?, paths: [String])] = [
-        ("Streaming", "With authentication on, set the receiver's user name and password under Connection.",
+        (L("Streaming"), L("With authentication on, set the receiver's user name and password under Connection."),
          ["config.streaming.authentication", "config.streaming.descramble", "config.usage.http_startdelay", "config.usage.frontend_priority"]),
-        ("Recording", nil,
+        (L("Recording settings"), nil,
          ["config.recording.margin_before", "config.recording.margin_after", "config.recording.default_afterevent", "config.recording.keep_timers"]),
-        ("System", "Enigma2 stores changed settings when it goes to standby or restarts.",
+        (L("System"), L("Enigma2 stores changed settings when it goes to standby or restarts."),
          ["config.timezone.area", "config.timezone.val", "config.misc.SyncTimeUsing", "config.usage.boot_action",
           "config.usage.shutdownNOK_action", "config.workaround.wakeuptime"]),
     ]
@@ -331,7 +353,11 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
     private func updateCard() {
         let brand = about?["brand"] as? String ?? ""
         let model = about?["model"] as? String ?? ""
-        modelLabel.text = "\(brand) \(model)".trimmingCharacters(in: .whitespaces).isEmpty ? "Receiver" : "\(brand) \(model)"
+        modelLabel.text = "\(brand) \(model)".trimmingCharacters(in: .whitespaces).isEmpty ? L("Receiver") : "\(brand) \(model)"
+        if about != nil, ReceiverStore.active?.name == ReceiverStore.active?.address {
+            ReceiverStore.adoptName("\(brand) \(model)")
+            table.reloadData()
+        }
         let distro = (about?["friendlyimagedistro"] as? String) ?? (about?["imagedistro"] as? String) ?? ""
         let version = about?["imagever"] as? String ?? ""
         let webif = about?["webifver"] as? String ?? ""
@@ -339,22 +365,22 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
         addressLabel.text = api?.stbAddress
         switch (reachable, inStandby) {
         case (false?, _):
-            statusLabel.text = "● Not reachable"
+            statusLabel.text = "● " + L("Not reachable")
             statusLabel.textColor = .systemRed
         case (_, true?):
-            statusLabel.text = "● Standby"
+            statusLabel.text = "● " + L("status.standby")
             statusLabel.textColor = .systemOrange
         case (_, false?):
-            statusLabel.text = "● On"
+            statusLabel.text = "● " + L("status.on")
             statusLabel.textColor = .systemGreen
         default:
-            statusLabel.text = "Connecting…"
+            statusLabel.text = L("Connecting…")
             statusLabel.textColor = Glass.secondaryText
         }
         if let snr = signal?["snr"] as? Int {
             let db = signal?["snr_db"] as? String
             let type = signal?["tunertype"] as? String
-            signalLabel.text = ["Signal \(snr)%", db.map { "\($0) dB" }, type].compactMap { $0 }.joined(separator: " · ")
+            signalLabel.text = [L("Signal %d%%", snr), db.map { "\($0) dB" }, type].compactMap { $0 }.joined(separator: " · ")
             signalBar.progress = Float(snr) / 100
             signalBar.isHidden = false
         } else {
@@ -366,9 +392,12 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
     private var transcodingSupported = false
 
     private var sections: [Section] {
+        let receivers = ReceiverStore.all.map { Row.receiver($0) } + [.addReceiver]
         var result = [
-            Section(title: "Receiver", footer: nil, rows: [.power, .sleepTimer, .restartGUI, .reboot]),
-            Section(title: "Watching on Apple TV", footer: nil, rows: [.timeshift, .timeshiftBuffer, .zap, .transcoding]),
+            Section(title: L("Receivers"), footer: receivers.count > 2 ? L("Switch between the receivers in your home. Each keeps its own last channel.") : nil,
+                    rows: receivers),
+            Section(title: L("Receiver"), footer: nil, rows: [.power, .sleepTimer, .restartGUI, .reboot]),
+            Section(title: L("Watching on Apple TV"), footer: nil, rows: [.timeshift, .timeshiftBuffer, .zap, .transcoding]),
         ]
         for group in ReceiverSettingsViewController.curated {
             let rows = group.paths.filter { items[$0] != nil }.map { Row.config($0) }
@@ -376,7 +405,7 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
                 result.append(Section(title: group.title, footer: group.footer, rows: rows))
             }
         }
-        result.append(Section(title: "Connection", footer: nil, rows: [.allSettings, .address, .credentials, .search]))
+        result.append(Section(title: L("Connection"), footer: nil, rows: [.allSettings, .address, .credentials]))
         return result
     }
 
@@ -407,44 +436,49 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
         content.secondaryText = value
         cell.contentConfiguration = content
         cell.accessoryType = pushes ? .disclosureIndicator : .none
+        if case .receiver(let profile) = row, profile.id == ReceiverStore.active?.id {
+            cell.accessoryType = .checkmark
+        }
         return cell
     }
 
-    private func onOff(_ value: Bool) -> String { return value ? "On" : "Off" }
+    private func onOff(_ value: Bool) -> String { return value ? L("On") : L("Off") }
 
     private func describe(_ row: Row) -> (String, String?, Bool) {
         let uds = UserDefaults.standard
         switch row {
         case .power:
-            return (inStandby == true ? "Wake up receiver" : "Put receiver in standby", nil, false)
+            return (inStandby == true ? L("Wake up receiver") : L("Put receiver in standby"), nil, false)
         case .sleepTimer:
-            guard let timer = sleepTimer else { return ("Sleep timer", "…", true) }
-            return ("Sleep timer", timer.enabled ? "\(timer.minutes) min · \(timer.action == "shutdown" ? "Deep standby" : "Standby")" : "Off", true)
+            guard let timer = sleepTimer else { return (L("Sleep timer"), "…", true) }
+            return (L("Sleep timer"), timer.enabled ? L("%d min", timer.minutes) + " · " + (timer.action == "shutdown" ? L("Deep standby") : L("status.standby")) : L("Off"), true)
         case .restartGUI:
-            return ("Restart Enigma2", nil, false)
+            return (L("Restart Enigma2"), nil, false)
         case .reboot:
-            return ("Reboot receiver", nil, false)
+            return (L("Reboot receiver"), nil, false)
         case .timeshift:
-            return ("Timeshift", onOff(uds.bool(forKey: "timeshift")), false)
+            return (L("Timeshift"), onOff(uds.bool(forKey: "timeshift")), false)
         case .timeshiftBuffer:
             let minutes = uds.integer(forKey: "timeshiftMinutes")
-            return ("Timeshift buffer", minutes >= 60 ? "\(minutes / 60) h" : "\(max(minutes, 30)) min", true)
+            return (L("Timeshift buffer"), minutes >= 60 ? L("%d h", minutes / 60) : L("%d min", max(minutes, 30)), true)
         case .zap:
-            return ("Switch receiver to watched channel", onOff(uds.bool(forKey: "zap")), false)
+            return (L("Switch receiver to watched channel"), onOff(uds.bool(forKey: "zap")), false)
         case .transcoding:
-            return ("Use transcoding port", transcodingSupported ? onOff(uds.bool(forKey: "useTranscoding")) : "Not supported", false)
+            return (L("Use transcoding port"), transcodingSupported ? onOff(uds.bool(forKey: "useTranscoding")) : L("Not supported"), false)
         case .config(let path):
             let item = items[path]
             return (item?.title ?? path, item?.currentLabel, item?.kind == .select)
         case .allSettings:
-            return ("All receiver settings", nil, true)
+            return (L("All receiver settings"), nil, true)
         case .address:
-            return ("Receiver address", api?.stbAddress, false)
+            return (L("Receiver address"), api?.stbAddress, false)
         case .credentials:
             let user = api?.username ?? ""
-            return ("User name & password", user.isEmpty ? "None" : user, false)
-        case .search:
-            return ("Search for receivers…", nil, false)
+            return (L("User name & password"), user.isEmpty ? L("None") : user, false)
+        case .receiver(let profile):
+            return (profile.name, profile.id == ReceiverStore.active?.id ? L("%@ · Connected", profile.address) : profile.address, false)
+        case .addReceiver:
+            return (L("Add receiver…"), nil, false)
         }
     }
 
@@ -458,9 +492,9 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self?.refreshStatus() }
             }
         case .sleepTimer:
-            let options = [0, 15, 30, 45, 60, 90, 120].map { ($0 == 0 ? "0" : String($0), $0 == 0 ? "Off" : "\($0) minutes") }
+            let options = [0, 15, 30, 45, 60, 90, 120].map { ($0 == 0 ? "0" : String($0), $0 == 0 ? L("Off") : L("%d minutes", $0)) }
             let current = sleepTimer?.enabled == true ? String(sleepTimer?.minutes ?? 0) : "0"
-            pushChoices("Sleep timer", options, selected: current) { [weak self] value in
+            pushChoices(L("Sleep timer"), options, selected: current) { [weak self] value in
                 self?.api?.setSleepTimer(minutes: Int(value) ?? 0, action: self?.sleepTimer?.action ?? "standby") { ok, message in
                     if !ok { self?.showError(message) }
                     self?.api?.getSleepTimer { timer in
@@ -470,19 +504,23 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
                 }
             }
         case .restartGUI:
-            confirm("Restart Enigma2?", "The receiver's interface restarts. Live TV stops for a moment.", action: "Restart") { [weak self] in
+            confirm(L("Restart Enigma2?"), L("The receiver's interface restarts. Live TV stops for a moment."), action: L("Restart")) { [weak self] in
                 self?.api?.setPowerState(.restartGUI)
             }
         case .reboot:
-            confirm("Reboot receiver?", "Live TV and recordings in progress will stop.", action: "Reboot") { [weak self] in
+            confirm(L("Reboot receiver?"), L("Live TV and recordings in progress will stop."), action: L("Reboot")) { [weak self] in
                 self?.api?.reboot()
             }
         case .timeshift:
             uds.set(!uds.bool(forKey: "timeshift"), forKey: "timeshift")
             appSettingsChanged()
         case .timeshiftBuffer:
-            let options = [30, 60, 120, 180].map { (String($0), $0 >= 60 ? "\($0 / 60) hour\($0 > 60 ? "s" : "")" : "\($0) minutes") }
-            pushChoices("Timeshift buffer", options, selected: String(uds.integer(forKey: "timeshiftMinutes"))) { [weak self] value in
+            let options: [(String, String)] = [30, 60, 120, 180].map { minutes -> (String, String) in
+                let label: String
+                if minutes < 60 { label = L("%d minutes", minutes) } else if minutes == 60 { label = L("1 hour") } else { label = L("%d hours", minutes / 60) }
+                return (String(minutes), label)
+            }
+            pushChoices(L("Timeshift buffer"), options, selected: String(uds.integer(forKey: "timeshiftMinutes"))) { [weak self] value in
                 uds.set(Int(value) ?? 60, forKey: "timeshiftMinutes")
                 self?.appSettingsChanged()
             }
@@ -499,7 +537,7 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
         case .allSettings:
             navigationController?.pushViewController(ConfigSectionsViewController(), animated: true)
         case .address:
-            editText("Receiver address", value: api?.stbAddress ?? "", keyboard: .URL) { [weak self] value in
+            editText(L("Receiver address"), value: api?.stbAddress ?? "", keyboard: .URL) { [weak self] value in
                 let address = value.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !address.isEmpty else { return }
                 uds.set(address, forKey: "stbAddress")
@@ -507,9 +545,36 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
             }
         case .credentials:
             editCredentials()
-        case .search:
+        case .receiver(let profile):
+            receiverActions(profile)
+        case .addReceiver:
             onSearch?()
         }
+    }
+
+    private func receiverActions(_ profile: ReceiverProfile) {
+        let isActive = profile.id == ReceiverStore.active?.id
+        let sheet = UIAlertController(title: profile.name, message: profile.address, preferredStyle: .actionSheet)
+        if !isActive {
+            sheet.addAction(UIAlertAction(title: L("Watch from this receiver"), style: .default) { [weak self] _ in
+                ReceiverStore.activate(profile)
+                self?.reconnect()
+            })
+        }
+        sheet.addAction(UIAlertAction(title: L("Rename"), style: .default) { [weak self] _ in
+            self?.editText(L("Receiver name"), value: profile.name, keyboard: .default) { name in
+                ReceiverStore.rename(profile, to: name)
+                self?.table.reloadData()
+            }
+        })
+        if !isActive {
+            sheet.addAction(UIAlertAction(title: L("Remove"), style: .destructive) { [weak self] _ in
+                ReceiverStore.remove(profile)
+                self?.table.reloadData()
+            })
+        }
+        sheet.addAction(UIAlertAction(title: L("Cancel"), style: .cancel))
+        present(sheet, animated: true)
     }
 
     // MARK: Actions
@@ -535,7 +600,7 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
     private func confirm(_ title: String, _ message: String, action: String, handler: @escaping () -> Void) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: action, style: .destructive) { _ in handler() })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: L("Cancel"), style: .cancel))
         present(alert, animated: true)
     }
 
@@ -547,35 +612,35 @@ final class ReceiverSettingsViewController: UIViewController, UITableViewDataSou
             field.autocapitalizationType = .none
             field.autocorrectionType = .no
         }
-        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in onSave(alert.textFields?.first?.text ?? "") })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: L("Save"), style: .default) { _ in onSave(alert.textFields?.first?.text ?? "") })
+        alert.addAction(UIAlertAction(title: L("Cancel"), style: .cancel))
         present(alert, animated: true)
     }
 
     private func editCredentials() {
-        let alert = UIAlertController(title: "Receiver login", message: "Only needed when the receiver's web interface or streams require authentication.", preferredStyle: .alert)
+        let alert = UIAlertController(title: L("Receiver login"), message: L("Only needed when the receiver's web interface or streams require authentication."), preferredStyle: .alert)
         alert.addTextField { field in
-            field.placeholder = "User name"
+            field.placeholder = L("User name")
             field.text = self.api?.username
             field.autocapitalizationType = .none
             field.autocorrectionType = .no
         }
         alert.addTextField { field in
-            field.placeholder = "Password"
+            field.placeholder = L("Password")
             field.text = self.api?.password
             field.isSecureTextEntry = true
         }
-        alert.addAction(UIAlertAction(title: "Save", style: .default) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: L("Save"), style: .default) { [weak self] _ in
             UserDefaults.standard.set(alert.textFields?[0].text ?? "", forKey: "username")
             UserDefaults.standard.set(alert.textFields?[1].text ?? "", forKey: "password")
             self?.reconnect()
         })
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: L("Cancel"), style: .cancel))
         present(alert, animated: true)
     }
 
     private func showError(_ message: String?) {
-        let alert = UIAlertController(title: "Could not change the setting", message: message, preferredStyle: .alert)
+        let alert = UIAlertController(title: L("Could not change the setting"), message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
     }
@@ -602,14 +667,14 @@ enum ConfigEditor {
                 field.autocorrectionType = .no
                 field.autocapitalizationType = .none
             }
-            alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
+            alert.addAction(UIAlertAction(title: L("Save"), style: .default) { _ in
                 var value = alert.textFields?.first?.text ?? ""
                 if item.kind == .number, let number = Int(value), let limits = item.limits {
                     value = String(min(max(number, limits.min), limits.max))
                 }
                 save(item, value: value, from: controller, done: done)
             })
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            alert.addAction(UIAlertAction(title: L("Cancel"), style: .cancel))
             controller.present(alert, animated: true)
         case .other:
             break
@@ -621,7 +686,7 @@ enum ConfigEditor {
             if ok {
                 item.current = value
             } else {
-                let alert = UIAlertController(title: "Could not change “\(item.title)”", message: message, preferredStyle: .alert)
+                let alert = UIAlertController(title: L("Could not change “%@”", item.title), message: message, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "OK", style: .default))
                 controller.present(alert, animated: true)
             }
@@ -693,7 +758,7 @@ final class ConfigSectionsViewController: UITableViewController {
 
     init() {
         super.init(style: .grouped)
-        title = "Receiver settings"
+        title = L("Receiver settings")
     }
 
     required init?(coder: NSCoder) {
@@ -770,7 +835,7 @@ final class ConfigItemsViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return items.isEmpty ? nil : "Enigma2 stores changed settings when it goes to standby or restarts."
+        return items.isEmpty ? nil : L("Enigma2 stores changed settings when it goes to standby or restarts.")
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

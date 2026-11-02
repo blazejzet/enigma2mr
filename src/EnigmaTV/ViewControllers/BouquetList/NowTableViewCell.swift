@@ -40,9 +40,19 @@ class NowTableViewCell: UITableViewCell {
     
     func setup(e:EpgEvent){
         self.event = e;
+        guard e.hasData else {
+            // Receiver without EPG for this channel: no "N/A 01:00 0 min." placeholder.
+            self.titlelabel.text = L("No programme information")
+            self.hour.text = ""
+            self.duration.text = ""
+            self.progress.isHidden = true
+            applyFocusTextColors()
+            return
+        }
+        self.progress.isHidden = false
         self.titlelabel.text = e.title;
         self.hour.text = e.getBeginTimeString()
-        self.duration.text = e.duration_sec == nil ? "" : "\(e.durationMinutes) min."
+        self.duration.text = e.duration_sec == nil ? "" : L("%d min", e.durationMinutes)
         self.progress.progress = e.getProgress()
         applyFocusTextColors()
     }

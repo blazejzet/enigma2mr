@@ -131,3 +131,18 @@ class UIVisualEffectExtension : UIVisualEffectView {
         clipsToBounds = true
     }
 }
+
+extension UIView {
+    /// All descendants, depth first.
+    var allSubviews: [UIView] { return subviews + subviews.flatMap { $0.allSubviews } }
+}
+
+/// Localized UI text. The English text is the key, so English needs no entry in Localizable.strings.
+func L(_ text: String) -> String {
+    return NSLocalizedString(text, comment: "")
+}
+
+/// Localized format string ("Record %@", "%d min ago").
+func L(_ format: String, _ arguments: CVarArg...) -> String {
+    return String(format: NSLocalizedString(format, comment: ""), arguments: arguments)
+}

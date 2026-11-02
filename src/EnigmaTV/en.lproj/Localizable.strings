@@ -1,0 +1,5 @@
+/* Localizable.strings – en. The English text is the key; only keys that are not English text are listed. */
+
+"Recording (playing)" = "Recording";
+"status.on" = "On";
+"status.standby" = "Standby";

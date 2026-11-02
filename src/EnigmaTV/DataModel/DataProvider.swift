@@ -110,6 +110,23 @@ class DataProvider: NSObject {
         }
     }
 
+    /// First bouquet (in list order) containing `sref`, with the channel from it. Uses the cached lists.
+    func findService(sref: String, cb: @escaping (Service?, Service?) -> Void) {
+        getBouquets { bouquets in
+            func check(_ index: Int) {
+                guard index < bouquets.count, let bref = bouquets[index].servicereference else { return cb(nil, nil) }
+                self.getServices(bref: bref) { services in
+                    if let service = services.first(where: { $0.servicereference == sref }) {
+                        cb(service, bouquets[index])
+                    } else {
+                        check(index + 1)
+                    }
+                }
+            }
+            check(0)
+        }
+    }
+
     /// Neighbour of `service` in its bouquet, wrapping around. `offset` -1 = previous, +1 = next.
     func neighbour(of service: Service, in services: [Service], offset: Int) -> Service? {
         guard !services.isEmpty else { return nil }

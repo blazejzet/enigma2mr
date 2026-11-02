@@ -12,6 +12,7 @@ import Pods_EnigmaTV
 import CloudKit
 import AVFoundation
 import CoreFoundation
+import MediaPlayer
 
 class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
 
@@ -43,6 +44,8 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
     private(set) var timeshift = false
     /// Short user feedback ("LIVE", "−02:15", "Paused") – shown by ViewController.
     var onTimeshiftStatus: ((String) -> Void)?
+    /// true from starting a stream until VLC shows a picture (or gives up) – drives the loading spinner.
+    var onLoading: ((Bool) -> Void)?
     /// Wall-clock time of the first byte of the currently opened buffer URL.
     private var tsAnchorTime: TimeInterval = 0
     /// Opened before the first byte arrived: tsAnchorTime is just "now" and is corrected on .playing.
@@ -75,6 +78,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
         case .playing:
             vlcPaused = false
             reconnectAttempts = 0
+            onLoading?(false)
             if let position = changeToPosition {
                 changeToPosition = nil
                 player.position = position
@@ -98,7 +102,10 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
     /// reopen it with a short back-off. With timeshift, reopen the buffer where playback was.
     private func scheduleReconnectIfNeeded() {
         guard mode == .service, !userStopped, let media = first.1.media,
-              reconnectAttempts < StreamView.maxReconnectAttempts else { return }
+              reconnectAttempts < StreamView.maxReconnectAttempts else {
+            onLoading?(false)
+            return
+        }
         reconnectAttempts += 1
         let delay = Double(reconnectAttempts) * 1.5
         print("[STATE] reconnect #\(reconnectAttempts) in \(delay)s")
@@ -158,6 +165,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
         // iOS reclaims listening sockets of suspended apps – restart the server on next use.
         TimeshiftServer.shared.shutdown()
         print("Stopping stream")
+        onLoading?(false)
         first.1.stop()
         first.1.media = nil
         hidePip()
@@ -165,6 +173,12 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
 
     /// Position (0...1) to seek to once the next movie starts playing ("continue watching").
     var changeToPosition:Float?
+
+    /// Paused by the user (timeshift pause or a paused recording / live stream).
+    var isPaused: Bool {
+        if timeshift { return tsPausedAt != nil }
+        return first.1.media != nil && !first.1.isPlaying
+    }
 
     // MARK: - Play / pause
 
@@ -208,6 +222,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
             // Forget the old stream, otherwise switching back to it would "promote" this stopped player.
             second.1.stop()
             second.1.media = nil
+            onLoading?(!first.1.isPlaying)
 
         }else{
             first.1.media = StreamView.makeMedia(url: url)
@@ -233,6 +248,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
         mode = viewingMode.service
         userStopped = false
         changeToPosition = nil
+        onLoading?(true)
         self.saveLast(service: service, bouquet: bouquet)
 
         if api.zap {
@@ -278,6 +294,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
         }
         stopTimeshift()
         mode = .movie
+        onLoading?(true)
 
         if let serviceref = movie.serviceref, let privateCloudDatabase = CloudSync.database {
             let movieInfo = CKRecord(recordType: "MovieInfo", recordID: CKRecord.ID(recordName: serviceref))
@@ -351,7 +368,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
     func goLive() {
         guard timeshift else { return }
         openTimeshift(at: nil)
-        onTimeshiftStatus?("LIVE")
+        onTimeshiftStatus?(L("LIVE"))
     }
 
     private func toggleTimeshiftPause() {
@@ -373,14 +390,14 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
             let position = timeshiftPlaybackTime
             first.1.pause()
             tsPausedAt = position
-            onTimeshiftStatus?("Paused")
+            onTimeshiftStatus?(L("Paused"))
         }
     }
 
     private func announceTimeshift() {
         let delay = timeshiftDelay
         if delay < TimeShiftRecorder.liveDelay + 5 {
-            onTimeshiftStatus?("LIVE")
+            onTimeshiftStatus?(L("LIVE"))
             return
         }
         let total = Int(delay)
@@ -404,7 +421,7 @@ class StreamView: UIView, VLCMediaPlayerDelegate, TimeShiftRecorderDelegate {
         stopTimeshift()
         url = liveURL
         playLiveStream()
-        onTimeshiftStatus?("Timeshift unavailable")
+        onTimeshiftStatus?(L("Timeshift unavailable"))
     }
 
     // MARK: - PiP
@@ -477,5 +494,347 @@ enum CloudSync {
         guard let url = Bundle.main.executableURL,
               let binary = try? Data(contentsOf: url, options: .alwaysMapped) else { return false }
         return binary.range(of: Data("com.apple.developer.icloud-services".utf8)) != nil
+    }
+}
+
+
+/// tvOS "Now Playing": programme / recording info for Control Center, the Apple TV Remote on iPhone and Siri,
+/// and their play/pause/skip commands.
+final class NowPlaying {
+    private weak var sv: StreamView?
+    private var service: Service?
+    private var bouquet: Service?
+    private var movie: Movie?
+    /// Last state written for the other Apple TVs, and when.
+    private var sharedSession: WatchSession?
+    private var event: EpgEvent?
+    private var events = [EpgEvent]()
+    private var artwork: UIImage?
+    private var timer: Timer?
+    /// Invalidates EPG / artwork answers that belong to a previous channel or recording.
+    private var generation = 0
+    /// The Siri Remote's play/pause button may arrive both as a press and as a remote command.
+    private var lastLocalToggle = Date.distantPast
+    private static let skipInterval = 15.0
+
+    init(streamView: StreamView) {
+        sv = streamView
+        let commands = MPRemoteCommandCenter.shared()
+        commands.togglePlayPauseCommand.addTarget { [weak self] _ in self?.togglePause() ?? .commandFailed }
+        commands.playCommand.addTarget { [weak self] _ in self?.setPaused(false) ?? .commandFailed }
+        commands.pauseCommand.addTarget { [weak self] _ in self?.setPaused(true) ?? .commandFailed }
+        commands.skipForwardCommand.preferredIntervals = [NSNumber(value: NowPlaying.skipInterval)]
+        commands.skipBackwardCommand.preferredIntervals = [NSNumber(value: NowPlaying.skipInterval)]
+        commands.skipForwardCommand.addTarget { [weak self] event in
+            self?.skip(by: (event as? MPSkipIntervalCommandEvent)?.interval ?? NowPlaying.skipInterval) ?? .commandFailed
+        }
+        commands.skipBackwardCommand.addTarget { [weak self] event in
+            self?.skip(by: -((event as? MPSkipIntervalCommandEvent)?.interval ?? NowPlaying.skipInterval)) ?? .commandFailed
+        }
+        commands.changePlaybackPositionCommand.addTarget { [weak self] event in
+            guard let event = event as? MPChangePlaybackPositionCommandEvent else { return .commandFailed }
+            return self?.seek(to: event.positionTime) ?? .commandFailed
+        }
+    }
+
+    /// The programme on screen (live / timeshift), if the EPG has it.
+    var currentProgramme: EpgEvent? { return event }
+
+    // MARK: What is playing
+
+    func watching(_ service: Service, in bouquet: Service?) {
+        reset()
+        self.service = service
+        self.bouquet = bouquet
+        loadEvents()
+        loadArtwork()
+        publish()
+    }
+
+    func watching(_ movie: Movie) {
+        reset()
+        self.movie = movie
+        loadArtwork()
+        publish()
+    }
+
+    func stop() {
+        shareSession()   // last recording position
+        reset()
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
+        RoomSync.markStopped()
+    }
+
+    /// The play/pause press was handled by the player screen itself.
+    func noteLocalToggle() {
+        lastLocalToggle = Date()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in self?.publish() }
+    }
+
+    private func reset() {
+        generation += 1
+        service = nil
+        bouquet = nil
+        movie = nil
+        event = nil
+        events = []
+        artwork = nil
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in self?.tick() }
+    }
+
+    /// Follows the picture on screen (also when timeshift lags behind live) into the next programme.
+    private func tick() {
+        guard service != nil || movie != nil else { return }
+        if service != nil {
+            let shown = currentEvent()
+            if shown !== event {
+                event = shown
+                artwork = nil
+                loadArtwork()
+            }
+            if shown == nil && !events.isEmpty { loadEvents() }
+        }
+        publish()
+    }
+
+    private var playbackTime: TimeInterval {
+        return sv?.timeshiftPlaybackTime ?? Date().timeIntervalSince1970
+    }
+
+    private func currentEvent() -> EpgEvent? {
+        let t = UInt64(playbackTime)
+        return events.first { e in
+            guard e.hasData, let b = e.begin_timestamp, let d = e.duration_sec else { return false }
+            return b <= t && t < b + d
+        }
+    }
+
+    private func loadEvents() {
+        guard let sref = service?.servicereference else { return }
+        let gen = generation
+        let now = Int64(Date().timeIntervalSince1970)
+        // From 4 h back: the timeshift buffer can show an earlier programme.
+        DataProvider.def().getEpgForService(sref: sref, begin: now - 4 * 60 * 60, end: now + 6 * 60 * 60) { [weak self] events in
+            guard let self = self, gen == self.generation else { return }
+            self.events = events
+            self.event = self.currentEvent()
+            self.loadArtwork()
+            self.publish()
+        }
+    }
+
+    /// Programme artwork from TMDB when known, else the channel logo.
+    private func loadArtwork() {
+        let gen = generation
+        let apply: (UIImage?) -> Void = { [weak self] image in
+            DispatchQueue.main.async {
+                guard let self = self, gen == self.generation, let image = image else { return }
+                self.artwork = image
+                self.publish()
+            }
+        }
+        let title = movie?.eventname ?? event?.title
+        let minutes = movie.map { $0.lengthSeconds / 60 } ?? event?.durationMinutes ?? 0
+        let logo = { [weak self] in
+            guard let service = self?.service else { return }
+            UIImageView.loadChannelLogo(for: service, completion: apply)
+        }
+        guard let name = title, !name.isEmpty, let api = STBAPI.common() else { return logo() }
+        api.searchInfoWeb(title: name, duration: minutes, eid: Int(event?.begin_timestamp ?? 0)) { image, backdrop, _, ok in
+            if ok, let art = backdrop ?? image { apply(art) } else { DispatchQueue.main.async(execute: logo) }
+        }
+    }
+
+    private func publish() {
+        guard let sv = sv, service != nil || movie != nil else { return }
+        var info = [String: Any]()
+        if let movie = movie {
+            info[MPMediaItemPropertyTitle] = movie.eventname ?? ""
+            if let channel = movie.servicename { info[MPMediaItemPropertyArtist] = channel }
+            if movie.lengthSeconds > 0 { info[MPMediaItemPropertyPlaybackDuration] = Double(movie.lengthSeconds) }
+            info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = Double(sv.mp.time.intValue) / 1000
+        } else if let service = service {
+            let channel = service.displayName ?? ""
+            if let event = event, let begin = event.begin_timestamp, let duration = event.duration_sec, duration > 0 {
+                info[MPMediaItemPropertyTitle] = event.title ?? channel
+                info[MPMediaItemPropertyArtist] = channel
+                info[MPMediaItemPropertyPlaybackDuration] = Double(duration)
+                info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = max(0, playbackTime - Double(begin))
+            } else {
+                info[MPMediaItemPropertyTitle] = channel
+            }
+            info[MPNowPlayingInfoPropertyIsLiveStream] = sv.timeshiftDelay < 5
+        }
+        info[MPNowPlayingInfoPropertyMediaType] = MPNowPlayingInfoMediaType.video.rawValue
+        info[MPNowPlayingInfoPropertyPlaybackRate] = sv.isPaused ? 0.0 : 1.0
+        if let artwork = artwork {
+            info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: artwork.size) { _ in artwork }
+        }
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+        shareSession()
+
+        let commands = MPRemoteCommandCenter.shared()
+        let seekable = movie != nil || sv.timeshift
+        commands.skipForwardCommand.isEnabled = seekable
+        commands.skipBackwardCommand.isEnabled = seekable
+        commands.changePlaybackPositionCommand.isEnabled = movie != nil
+    }
+
+    /// Tells the other Apple TVs what plays here. Written on changes, and once a minute for a recording's position.
+    private func shareSession() {
+        guard let sv = sv, let receiver = ReceiverStore.active else { return }
+        var session: WatchSession
+        if let movie = movie, let sref = movie.serviceref {
+            // While a resume seek is pending, the target is the real position.
+            let position = Double(sv.changeToPosition ?? sv.mp.position)
+            session = WatchSession(device: RoomSync.deviceID, room: RoomSync.roomName, receiverAddress: receiver.address,
+                                   receiverName: receiver.name, kind: "recording", sref: sref, bref: nil,
+                                   title: movie.eventname ?? "", programme: movie.servicename,
+                                   position: position > 0 ? position : sharedSession?.position, updated: 0, active: true)
+        } else if let service = service, let sref = service.servicereference {
+            session = WatchSession(device: RoomSync.deviceID, room: RoomSync.roomName, receiverAddress: receiver.address,
+                                   receiverName: receiver.name, kind: "live", sref: sref, bref: bouquet?.servicereference,
+                                   title: service.displayName ?? "", programme: event?.title, position: nil, updated: 0, active: true)
+        } else {
+            return
+        }
+        let now = Date().timeIntervalSince1970
+        var previous = sharedSession
+        previous?.updated = 0
+        let changed = previous.map { p -> Bool in
+            var a = p, b = session
+            a.position = nil
+            b.position = nil
+            return a != b
+        } ?? true
+        let positionMoved = abs((session.position ?? 0) - (previous?.position ?? 0)) > 0.005
+        guard changed || (positionMoved && now - (sharedSession?.updated ?? 0) > 60) else { return }
+        session.updated = now
+        sharedSession = session
+        RoomSync.publish(session)
+    }
+
+    // MARK: Commands
+
+    private func togglePause() -> MPRemoteCommandHandlerStatus {
+        guard let sv = sv, service != nil || movie != nil else { return .noActionableNowPlayingItem }
+        guard Date().timeIntervalSince(lastLocalToggle) > 0.5 else { return .success }
+        sv.stTogglePause()
+        noteLocalToggle()
+        return .success
+    }
+
+    private func setPaused(_ paused: Bool) -> MPRemoteCommandHandlerStatus {
+        guard let sv = sv, service != nil || movie != nil else { return .noActionableNowPlayingItem }
+        if sv.isPaused != paused { return togglePause() }
+        return .success
+    }
+
+    private func skip(by seconds: TimeInterval) -> MPRemoteCommandHandlerStatus {
+        guard let sv = sv else { return .commandFailed }
+        if sv.timeshift {
+            sv.seekTimeshift(by: seconds)
+        } else if movie != nil {
+            let step = Int32(abs(seconds))
+            if seconds > 0 { sv.mp.jumpForward(step) } else { sv.mp.jumpBackward(step) }
+        } else {
+            return .commandFailed
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.publish() }
+        return .success
+    }
+
+    private func seek(to position: TimeInterval) -> MPRemoteCommandHandlerStatus {
+        guard let sv = sv, movie != nil else { return .commandFailed }
+        sv.mp.time = VLCTime(int: Int32(position * 1000))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.publish() }
+        return .success
+    }
+}
+
+// MARK: - Multi room
+
+/// What one Apple TV watches, shared with the user's other Apple TVs through iCloud key-value storage.
+struct WatchSession: Codable, Equatable {
+    var device: String
+    var room: String
+    var receiverAddress: String
+    var receiverName: String
+    /// "live" or "recording".
+    var kind: String
+    /// Service reference of the channel, or of the recording.
+    var sref: String
+    var bref: String?
+    var title: String
+    var programme: String?
+    /// Recordings: how far it was watched (0...1).
+    var position: Double?
+    var updated: TimeInterval
+    /// false once this Apple TV stopped (went to sleep, app closed).
+    var active: Bool
+}
+
+/// Sessions of all Apple TVs on the iCloud account. Each device writes only its own key.
+enum RoomSync {
+    private static let prefix = "room."
+    private static var store: NSUbiquitousKeyValueStore { return NSUbiquitousKeyValueStore.default }
+    static let changed = NSNotification.Name("RoomSync.changed")
+    private static var observing = false
+
+    static var deviceID: String {
+        if let id = UserDefaults.standard.string(forKey: "deviceID") { return id }
+        let id = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        UserDefaults.standard.set(id, forKey: "deviceID")
+        return id
+    }
+
+    /// Shown to the other Apple TVs ("Living room"). Editable in Settings.
+    static var roomName: String {
+        get {
+            let name = UserDefaults.standard.string(forKey: "roomName")?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return name.isEmpty ? UIDevice.current.name : name
+        }
+        set { UserDefaults.standard.set(newValue, forKey: "roomName") }
+    }
+
+    static func start() {
+        guard !observing else { return }
+        observing = true
+        NotificationCenter.default.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+                                               object: store, queue: .main) { _ in
+            NotificationCenter.default.post(name: changed, object: nil)
+        }
+        store.synchronize()
+    }
+
+    static var mine: WatchSession? { return session(forKey: prefix + deviceID) }
+
+    /// The other Apple TVs, most recent first; sessions older than two days are dropped.
+    static var others: [WatchSession] {
+        let cutoff = Date().timeIntervalSince1970 - 2 * 24 * 60 * 60
+        return store.dictionaryRepresentation.keys
+            .filter { $0.hasPrefix(prefix) && $0 != prefix + deviceID }
+            .compactMap(session(forKey:))
+            .filter { $0.updated > cutoff }
+            .sorted { $0.updated > $1.updated }
+    }
+
+    private static func session(forKey key: String) -> WatchSession? {
+        guard let data = store.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(WatchSession.self, from: data)
+    }
+
+    static func publish(_ session: WatchSession) {
+        guard let data = try? JSONEncoder().encode(session) else { return }
+        store.set(data, forKey: prefix + deviceID)
+        store.synchronize()
+    }
+
+    static func markStopped() {
+        guard var session = mine, session.active else { return }
+        session.active = false
+        session.updated = Date().timeIntervalSince1970
+        publish(session)
     }
 }

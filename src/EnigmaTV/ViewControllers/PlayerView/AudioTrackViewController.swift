@@ -88,14 +88,19 @@ class AudioTrackViewController: UIViewController, UITableViewDelegate, UITableVi
         } else if tableView == subtitlesTable {
             subtitleTracks = AudioTrackViewController.tracks(indexes: mp?.videoSubTitlesIndexes, names: mp?.videoSubTitlesNames)
         }
-        return tracks(for: tableView).count
+        // One explanatory row instead of an empty column.
+        return max(tracks(for: tableView).count, 1)
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let identifier = tableView == subtitlesTable ? "subtitlesCell" : "audioTracksCell"
         let cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath)
         let list = tracks(for: tableView)
-        guard indexPath.row < list.count else { return cell }
+        guard indexPath.row < list.count else {
+            cell.textLabel?.text = tableView == subtitlesTable ? "No subtitles" : "Default audio"
+            cell.textLabel?.font = cell.textLabel?.font.withSize(30)
+            return cell
+        }
         let track = list[indexPath.row]
         let current = tableView == subtitlesTable ? sv?.mp?.currentVideoSubTitleIndex : sv?.mp?.currentAudioTrackIndex
         cell.textLabel?.text = track.index == current ? "✔️ \(track.name)" : track.name

@@ -182,8 +182,8 @@ class Movies2ViewController: UIViewController, UICollectionViewDelegate, UIColle
         let timers = self.tlist?.timers?.count ?? 0
         let movies = self.mlist?.movies?.count ?? 0
         var parts = [String]()
-        if movies > 0 || timers == 0 { parts.append(movies == 1 ? "1 RECORDING" : "\(movies) RECORDINGS") }
-        if timers > 0 { parts.append(timers == 1 ? "1 SCHEDULED" : "\(timers) SCHEDULED") }
+        if movies > 0 || timers == 0 { parts.append(movies == 1 ? L("1 RECORDING") : L("%d RECORDINGS", movies)) }
+        if timers > 0 { parts.append(timers == 1 ? L("1 SCHEDULED") : L("%d SCHEDULED", timers)) }
         self.moviesCountLabel.adjustsFontSizeToFitWidth = true
         self.moviesCountLabel.minimumScaleFactor = 0.5
         self.moviesCountLabel.text = parts.joined(separator: " · ")
@@ -198,7 +198,7 @@ class Movies2ViewController: UIViewController, UICollectionViewDelegate, UIColle
         var views: [UIView] = [view]
         while let v = views.popLast() {
             if let label = v as? UILabel, let text = label.text,
-               text == "Attention!" || text.hasPrefix("No timers") {
+               text == "Attention!" || text.hasPrefix("No timers") || text == L("Attention!") || text == L("No timers and recordings available on the STB") {
                 found.append(label)
             }
             views.append(contentsOf: v.subviews)

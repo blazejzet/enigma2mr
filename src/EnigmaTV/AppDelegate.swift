@@ -10,6 +10,7 @@ import UIKit
 import AERecord
 import CoreData
 import SwiftyStoreKit
+import AVFoundation
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,6 +21,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Live TV must not dim/sleep while playing.
         application.isIdleTimerDisabled = true
+        // Playback session: makes the app the "Now Playing" app (Control Center, iPhone remote, Siri).
+        try? AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, mode: AVAudioSessionModeMoviePlayback, options: [])
+        try? AVAudioSession.sharedInstance().setActive(true)
         #if DEBUG
         // `-EnigmaResetSettings YES`: start like a fresh install (used for the App Review demo recording).
         if UserDefaults.standard.bool(forKey: "EnigmaResetSettings"), let bundle = Bundle.main.bundleIdentifier {

@@ -498,8 +498,7 @@ class ViewController: UIViewController {
         #endif
         // Give iCloud a moment to deliver the other devices' latest state.
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-            guard let self = self, self.presentedViewController == nil,
-                  UIApplication.shared.applicationState == .active,
+            guard let self = self, UIApplication.shared.applicationState == .active,
                   let session = RoomSync.others.first,
                   session.updated > lastHere, session.updated != self.answeredSession,
                   Date().timeIntervalSince1970 - session.updated < 30 * 60,
@@ -509,22 +508,44 @@ class ViewController: UIViewController {
             let what = session.kind == "recording"
                 ? "\(session.title)\(session.position.map { " · \(Int($0 * 100))%" } ?? "")"
                 : [session.title, session.programme].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+            // On top of whatever is shown – at launch the TV guide opens a moment earlier.
+            var top: UIViewController = self
+            while let presented = top.presentedViewController { top = presented }
+            guard !(top is UIAlertController) else { return }
             let alert = UIAlertController(title: L("Continue from %@?", session.room), message: what, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: L("Continue"), style: .default) { _ in self.continueSession(session) })
+            alert.addAction(UIAlertAction(title: L("Continue"), style: .default) { _ in
+                self.dismissAllVC()
+                self.continueSession(session)
+            })
             alert.addAction(UIAlertAction(title: L("Not now"), style: .cancel))
-            self.present(alert, animated: true)
+            top.present(alert, animated: true)
         }
     }
 
     /// Plays here what another Apple TV plays (or played): same receiver, channel / recording and position.
     func continueSession(_ session: WatchSession) {
-        if let profile = ReceiverStore.all.first(where: { $0.address == session.receiverAddress }),
-           profile.id != ReceiverStore.active?.id {
+        guard let profile = ReceiverStore.all.first(where: { $0.address == session.receiverAddress }) else {
+            // Never play "the same" channel from a different receiver.
+            let alert = UIAlertController(title: L("Receiver not saved"),
+                                          message: L("%@ is not set up on this Apple TV. Add it in Settings → Receivers.", session.receiverName),
+                                          preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: L("OK"), style: .default))
+            present(alert, animated: true)
+            return
+        }
+        if profile.id != ReceiverStore.active?.id {
             ReceiverStore.activate(profile)
+        }
+        // Like any explicit choice; the lookups below are asynchronous and must not win over a newer one.
+        supersedePendingPlayback()
+        let generation = playbackGeneration
+        let current = { [weak self] () -> Bool in
+            guard let self = self else { return false }
+            return generation == self.playbackGeneration && UIApplication.shared.applicationState != .background
         }
         if session.kind == "recording" {
             STBAPI.common()?.getMovies { [weak self] list in
-                guard let self = self,
+                guard let self = self, current(),
                       let movie = list.movies?.compactMap({ $0 }).first(where: { $0.serviceref == session.sref }) else { return }
                 self.watchMovie(movie)
                 if let position = session.position, position > 0, position < 0.99 {
@@ -533,7 +554,7 @@ class ViewController: UIViewController {
             }
         } else {
             let play: (Service?, Service?) -> Void = { [weak self] service, bouquet in
-                guard let service = service, let bouquet = bouquet else { return }
+                guard current(), let service = service, let bouquet = bouquet else { return }
                 self?.watch(service, inBouquet: bouquet)
             }
             if let bref = session.bref {

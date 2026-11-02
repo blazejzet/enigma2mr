@@ -559,7 +559,7 @@ final class NowPlaying {
     }
 
     func stop() {
-        shareSession()   // last recording position
+        shareSession(force: true)   // last recording position, whatever the throttle says
         reset()
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         RoomSync.markStopped()
@@ -576,6 +576,9 @@ final class NowPlaying {
         service = nil
         bouquet = nil
         movie = nil
+        // New media (or stopped): compare against nothing, so the next state is always published.
+        sharedSession = nil
+        lastEventsLoad = .distantPast
         event = nil
         events = []
         artwork = nil
@@ -593,7 +596,8 @@ final class NowPlaying {
                 artwork = nil
                 loadArtwork()
             }
-            if shown == nil && !events.isEmpty { loadEvents() }
+            // No programme on screen (empty or failed EPG answer, or past the known events): retry once a minute.
+            if shown == nil, Date().timeIntervalSince(lastEventsLoad) > 60 { loadEvents() }
         }
         publish()
     }
@@ -610,8 +614,11 @@ final class NowPlaying {
         }
     }
 
+    private var lastEventsLoad = Date.distantPast
+
     private func loadEvents() {
         guard let sref = service?.servicereference else { return }
+        lastEventsLoad = Date()
         let gen = generation
         let now = Int64(Date().timeIntervalSince1970)
         // From 4 h back: the timeshift buffer can show an earlier programme.
@@ -682,7 +689,7 @@ final class NowPlaying {
     }
 
     /// Tells the other Apple TVs what plays here. Written on changes, and once a minute for a recording's position.
-    private func shareSession() {
+    private func shareSession(force: Bool = false) {
         guard let sv = sv, let receiver = ReceiverStore.active else { return }
         var session: WatchSession
         if let movie = movie, let sref = movie.serviceref {
@@ -691,7 +698,8 @@ final class NowPlaying {
             session = WatchSession(device: RoomSync.deviceID, room: RoomSync.roomName, receiverAddress: receiver.address,
                                    receiverName: receiver.name, kind: "recording", sref: sref, bref: nil,
                                    title: movie.eventname ?? "", programme: movie.servicename,
-                                   position: position > 0 ? position : sharedSession?.position, updated: 0, active: true)
+                                   position: position > 0 ? position : (sharedSession?.sref == sref ? sharedSession?.position : nil),
+                                   updated: 0, active: true)
         } else if let service = service, let sref = service.servicereference {
             session = WatchSession(device: RoomSync.deviceID, room: RoomSync.roomName, receiverAddress: receiver.address,
                                    receiverName: receiver.name, kind: "live", sref: sref, bref: bouquet?.servicereference,
@@ -709,7 +717,9 @@ final class NowPlaying {
             return a != b
         } ?? true
         let positionMoved = abs((session.position ?? 0) - (previous?.position ?? 0)) > 0.005
-        guard changed || (positionMoved && now - (sharedSession?.updated ?? 0) > 60) else { return }
+        let age = now - (sharedSession?.updated ?? 0)
+        // Heartbeat every 2 minutes keeps a long live programme "active" for the other rooms.
+        guard force || changed || (positionMoved && age > 60) || age > 120 else { return }
         session.updated = now
         sharedSession = session
         RoomSync.publish(session)
@@ -813,6 +823,16 @@ enum RoomSync {
     /// The other Apple TVs, most recent first; sessions older than two days are dropped.
     static var others: [WatchSession] {
         let cutoff = Date().timeIntervalSince1970 - 2 * 24 * 60 * 60
+        #if DEBUG
+        // Screenshots in the simulator (no iCloud): a second Apple TV watching the same channel.
+        if UserDefaults.standard.bool(forKey: "EnigmaDemoRooms"), var demo = mine {
+            demo.device = "demo"
+            demo.room = L("Living room")
+            demo.active = true
+            demo.updated = Date().timeIntervalSince1970 - 60
+            return [demo]
+        }
+        #endif
         return store.dictionaryRepresentation.keys
             .filter { $0.hasPrefix(prefix) && $0 != prefix + deviceID }
             .compactMap(session(forKey:))

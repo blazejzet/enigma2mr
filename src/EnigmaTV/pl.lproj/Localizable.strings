@@ -148,3 +148,7 @@
 "status.standby" = "Czuwanie";
 "● Now" = "● Teraz";
 "● Recording" = "● Nagrywa";
+"Living room" = "Salon";
+"Receiver not saved" = "Dekoder nie jest zapisany";
+"%@ is not set up on this Apple TV. Add it in Settings → Receivers." = "%@ nie jest skonfigurowany na tym Apple TV. Dodaj go w Ustawienia → Dekodery.";
+"OK" = "OK";

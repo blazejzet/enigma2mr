@@ -452,8 +452,11 @@ class ViewController: UIViewController {
         let channel = service.displayName ?? ""
         api.runningRecording(sref: sref) { [weak self] running in
             guard let self = self, self.presentedViewController == nil else { return }
+            // Programme titles go into the message: the action buttons have a fixed width and would cut them off.
+            let programme = self.nowPlaying?.currentProgramme
+            let programmeInfo = programme.flatMap { e in e.title.map { "\($0) · \(e.getBeginTimeString())" } }
             let sheet = UIAlertController(title: running == nil ? L("Record %@", channel) : L("%@ is recording", channel),
-                                          message: running?.name, preferredStyle: .actionSheet)
+                                          message: running?.name ?? programmeInfo, preferredStyle: .actionSheet)
             let done: (Bool, String?) -> Void = { ok, message in
                 self.updateRecordingIndicator()
                 guard !ok else { return }
@@ -466,8 +469,8 @@ class ViewController: UIViewController {
                     api.timerDelete(running) { ok, message in done(ok, message) }
                 })
             } else {
-                if let event = self.nowPlaying?.currentProgramme, let id = event.id, let title = event.title {
-                    sheet.addAction(UIAlertAction(title: L("Record “%@”", title), style: .default) { _ in
+                if let event = programme, let id = event.id {
+                    sheet.addAction(UIAlertAction(title: L("Record this programme"), style: .default) { _ in
                         api.setTimer(sref: event.sref ?? sref, eid: id) { ok, message in done(ok, message) }
                     })
                 }
